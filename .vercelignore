@@ -1,0 +1,6 @@
+# 플러그인 전용 파일은 웹 배포에 불필요(정적으로 노출만 됨) — 숨기고 싶으면 유지
+manifest.json
+code.js
+ui.html
+실행방법.md
+README.md

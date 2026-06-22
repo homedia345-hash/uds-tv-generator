@@ -1,0 +1,13 @@
+{
+  "name": "UDS-TV Screen Generator",
+  "id": "uds-tv-screen-generator",
+  "api": "1.0.0",
+  "main": "code.js",
+  "ui": "ui.html",
+  "editorType": ["figma"],
+  "documentAccess": "dynamic-page",
+  "networkAccess": {
+    "allowedDomains": ["*"],
+    "reasoning": "자유문장→화면 스키마 변환을 위한 LLM 백엔드 호출(설정에서 엔드포인트 지정)."
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "uds-tv-backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "UDS-TV 화면 생성 백엔드 — 생성→자동교정→게이트 검수→재생성 루프",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.40.0",
+    "express": "^4.19.2"
+  },
+  "engines": { "node": ">=18" }
+}

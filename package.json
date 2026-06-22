@@ -1,0 +1,15 @@
+{
+  "name": "uds-tv-screen-generator",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "UDS-TV 화면 생성기 — 웹앱 + 서버리스 API (Vercel 배포 루트)",
+  "scripts": {
+    "dev": "node backend/server.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.40.0",
+    "express": "^4.19.2"
+  },
+  "engines": { "node": ">=18" }
+}

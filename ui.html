@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<style>
+  body { font-family: 'Pretendard', -apple-system, sans-serif; margin: 0; padding: 16px; background:#1e1e1e; color:#f5f5f5; font-size:13px; }
+  h3 { margin: 0 0 8px; font-size:14px; }
+  textarea { width:100%; box-sizing:border-box; background:#29292a; color:#f5f5f5; border:1px solid #414143; border-radius:8px; padding:10px; font-family:ui-monospace,monospace; font-size:12px; resize:vertical; }
+  input { width:100%; box-sizing:border-box; background:#29292a; color:#f5f5f5; border:1px solid #414143; border-radius:8px; padding:8px; margin-bottom:10px; }
+  button { border:0; border-radius:8px; padding:10px 14px; font-weight:600; cursor:pointer; margin-right:8px; }
+  .primary { background:#fa057f; color:#fff; }
+  .ghost { background:#414143; color:#f5f5f5; }
+  .row { margin-bottom:14px; }
+  label { display:block; margin-bottom:6px; color:#97979b; }
+  #log { white-space:pre-wrap; background:#19191a; border-radius:8px; padding:10px; margin-top:12px; min-height:60px; color:#cbcbcd; font-size:12px; }
+  .warn { color:#e9b630; }
+</style>
+</head>
+<body>
+  <div class="row">
+    <h3>UDS-TV 화면 생성</h3>
+    <label>① 자유문장 / 기능정의서 → 피그마에 바로 생성</label>
+    <textarea id="spec" rows="4" placeholder="예) 자동 전원 끄기 설정. 좌측 LNB '전원 자동 꺼짐' 선택, 오른쪽에 켜기 토글과 끄는 시간(사용 안 함/1~4시간) 라디오."></textarea>
+  </div>
+  <div class="row">
+    <label>규격서/화면 이미지 (선택 · 붙여넣기 가능)</label>
+    <input id="img" type="file" accept="image/*" />
+    <div id="imgname" class="muted" style="color:#97979b;font-size:12px;margin-top:4px"></div>
+  </div>
+  <div class="row">
+    <label>LLM 백엔드 엔드포인트</label>
+    <input id="endpoint" value="http://localhost:8787/generate" />
+    <button class="primary" id="genBtn">입력 → 피그마에 생성</button>
+  </div>
+  <hr style="border-color:#414143" />
+  <div class="row">
+    <label>② 화면 스키마(JSON) 직접 입력 — 백엔드 없이 즉시 생성</label>
+    <textarea id="schema" rows="8" placeholder='{ "screen": { "name":"...", "size":[1920,1080], "bg":"core/soft-black", "layout":"stack", "children":[ ... ] } }'></textarea>
+    <button class="ghost" id="buildBtn">JSON → 화면 생성</button>
+  </div>
+  <div id="log">대기 중…</div>
+
+<script>
+  const log = (m, cls) => { const el=document.getElementById('log'); el.innerHTML = (cls?('<span class="'+cls+'">'+m+'</span>'):m); };
+  function build(schema){ parent.postMessage({ pluginMessage:{ type:'build', schema } }, '*'); }
+
+  document.getElementById('buildBtn').onclick = () => {
+    const raw = document.getElementById('schema').value.trim();
+    if(!raw){ log('스키마 JSON을 입력하세요.', 'warn'); return; }
+    log('생성 중…'); build(raw);
+  };
+
+  // 이미지 첨부(파일 + 붙여넣기)
+  let curImage=null;
+  function setImage(d,n){curImage=d;document.getElementById('imgname').textContent=d?('🖼 '+(n||'이미지')+' 첨부됨'):'';}
+  document.getElementById('img').onchange=(e)=>{const f=e.target.files[0];if(!f){setImage(null);return;}const r=new FileReader();r.onload=()=>setImage(r.result,f.name);r.readAsDataURL(f);};
+  window.addEventListener('paste',(e)=>{const it=[...(e.clipboardData?.items||[])].find(i=>i.type.startsWith('image/'));if(it){const f=it.getAsFile();const r=new FileReader();r.onload=()=>setImage(r.result,'clipboard');r.readAsDataURL(f);}});
+
+  document.getElementById('genBtn').onclick = async () => {
+    const spec = document.getElementById('spec').value.trim();
+    const ep = document.getElementById('endpoint').value.trim();
+    if(!spec && !curImage){ log('문장을 입력하거나 이미지를 첨부하세요.','warn'); return; }
+    if(!ep){ log('백엔드 엔드포인트가 없습니다. 서버를 켜거나 ②에 JSON을 붙여넣으세요.','warn'); return; }
+    log(curImage?'이미지 분석 + 변환 중…':'백엔드에 변환 요청 중…');
+    try {
+      const res = await fetch(ep, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ spec, image: curImage }) });
+      const data = await res.json();          // { screen, _meta } 기대
+      if(data.error){ log('백엔드 오류: '+data.error,'warn'); return; }
+      document.getElementById('schema').value = JSON.stringify({screen:data.screen}, null, 2);
+      const m=data._meta||{};
+      log('스키마 수신 → 피그마에 생성 중…' + (m.vocabErrors&&m.vocabErrors.length?(' (어휘오류 '+m.vocabErrors.length+')'):''));
+      build({screen:data.screen});
+    } catch(e){ log('백엔드 연결 실패: '+e.message+' — 서버가 켜져 있는지 확인','warn'); }
+  };
+
+  onmessage = (e) => {
+    const m = e.data.pluginMessage; if(!m) return;
+    if(m.type==='done'){
+      let s='✅ 생성 완료 (id '+m.id+')';
+      if(m.fixes&&m.fixes.length) s+='\n\n🔧 자동교정 '+m.fixes.length+'건:\n- '+m.fixes.join('\n- ');
+      s+= (m.warns&&m.warns.length) ? '\n\n⚠️ 게이트 경고:\n- '+m.warns.join('\n- ') : '\n\n게이트 경고 없음';
+      log(s);
+    }
+    if(m.type==='error'){ log('❌ '+m.message, 'warn'); }
+  };
+</script>
+</body>
+</html>

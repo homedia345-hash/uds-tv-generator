@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>UDS-TV 화면 생성기</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@latest/dist/web/static/pretendard.css" />
+<style>
+  :root{
+    --soft-white:#F5F5F5; --gray-700:#CBCBCD; --gray-600:#97979B; --gray-500:#6D6D72;
+    --gray-400:#414143; --gray-300:#29292A; --gray-200:#19191A; --soft-black:#111111;
+    --primary:#FA057F; --secondary-01:#F471B2; --secondary-02:#F6ACCA; --accent-2:#F0CCCB;
+    --kids:#32A08C; --ai:#A052FF; --age-12:#E9B630; --age-15:#D87642; --age-19:#C34042;
+    --border:#E1E1E8; --text-primary:#2B2D36;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Pretendard',-apple-system,sans-serif;background:#0c0c0e;color:#F5F5F5;display:flex;height:100vh}
+  .left{width:380px;min-width:340px;border-right:1px solid #29292A;padding:20px;display:flex;flex-direction:column;gap:14px;overflow:auto}
+  .right{flex:1;display:flex;flex-direction:column;min-width:0}
+  h1{font-size:18px;margin:0}
+  .muted{color:#97979B;font-size:13px}
+  textarea,input{width:100%;background:#19191A;color:#F5F5F5;border:1px solid #414143;border-radius:8px;padding:10px;font-size:14px}
+  textarea{resize:vertical;min-height:90px;font-family:inherit}
+  button{border:0;border-radius:8px;padding:11px 16px;font-weight:700;cursor:pointer}
+  .primary{background:#FA057F;color:#fff}
+  .ghost{background:#414143;color:#F5F5F5}
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{background:#29292A;border:1px solid #414143;border-radius:999px;padding:6px 10px;font-size:12px;cursor:pointer;color:#CBCBCD}
+  .tabs{display:flex;gap:6px;padding:10px 14px;border-bottom:1px solid #29292A}
+  .tab{padding:6px 12px;border-radius:8px;cursor:pointer;font-size:13px;color:#97979B}
+  .tab.on{background:#29292A;color:#F5F5F5}
+  #stage{flex:1;overflow:auto;padding:24px;background:#0c0c0e}
+  #json,#report{flex:1;overflow:auto;padding:16px;white-space:pre-wrap;font-family:ui-monospace,monospace;font-size:12px;color:#CBCBCD;display:none}
+  .warn{color:#E9B630}.fix{color:#32A08C}
+  /* ---- 화면 캔버스 ---- */
+  .screen{width:1280px;max-width:100%;aspect-ratio:16/9;background:var(--soft-black);border-radius:12px;border:1px solid #29292A;
+          padding:48px;display:flex;flex-direction:column;gap:32px;overflow:hidden;position:relative}
+  .blk-text{}
+  .row{display:flex;align-items:center}
+  .col{display:flex;flex-direction:column}
+  .divider{height:1px;background:var(--soft-white);width:100%}
+  /* 컴포넌트 복제 */
+  .c-radio{display:inline-flex;align-items:center;gap:12px}
+  .c-radio .ring{width:24px;height:24px;border-radius:50%;border:2.5px solid var(--gray-500);display:flex;align-items:center;justify-content:center}
+  .c-radio.sel .ring{border-color:var(--primary)}
+  .c-radio.sel .ring::after{content:"";width:13px;height:13px;border-radius:50%;background:var(--primary)}
+  .c-radio.foc{background:var(--soft-white);border-radius:10px;padding:8px 18px}
+  .c-radio.foc .ring{border-color:var(--gray-300)} .c-radio.foc .lbl{color:var(--soft-black)}
+  .c-radio .lbl{font-size:24px;font-weight:500}
+  .c-toggle{width:60px;height:30px;border-radius:20px;background:var(--gray-500);position:relative;flex:none}
+  .c-toggle.on{background:var(--primary)}
+  .c-toggle .h{position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:var(--soft-white)}
+  .c-toggle.on .h{left:33px}
+  .c-btn{background:var(--gray-400);border:1px solid var(--gray-500);border-radius:12px;padding:18px 36px;font-size:24px;font-weight:700;color:var(--soft-white)}
+  .c-btn.foc{background:var(--soft-white);color:var(--soft-black);border:0}
+  .c-btn.dis{opacity:.3}
+  .c-dd{display:inline-flex;align-items:center;gap:12px;border:1px solid rgba(245,245,245,.2);border-radius:12px;padding:16px 16px 16px 28px}
+  .c-dd.foc{background:var(--gray-300);border:4px solid var(--soft-white)}
+  .c-dd .v{font-size:24px;font-weight:700}.c-dd .cv{opacity:.8}
+  .c-pin{width:64px;height:64px;border-radius:10px;background:rgba(151,151,155,.4);border:1px solid rgba(245,245,245,.1);display:inline-flex;align-items:center;justify-content:center}
+  .c-pin.foc{background:var(--soft-white);transform:scale(1.07)} .c-pin .star{font-size:28px}
+  .placeholder{border:1px dashed #6D6D72;color:#97979B;border-radius:8px;padding:10px 14px;font-size:13px}
+</style>
+</head>
+<body>
+  <div class="left">
+    <h1>UDS-TV 화면 생성기</h1>
+    <div class="muted">기능정의서·자유문장을 입력하면 우리 컴포넌트로 화면을 만들어 미리보기합니다.</div>
+    <label class="muted">백엔드 주소</label>
+    <input id="endpoint" value="/generate" />
+    <label class="muted">무엇을 만들까요?</label>
+    <textarea id="spec" placeholder="예: 자동 전원 끄기 설정 페이지. 좌측 메뉴에 '자동 전원 끄기 설정' 선택, 오른쪽에 켜기 토글과 끄는 시간(사용 안 함/1~4시간) 라디오."></textarea>
+    <div class="chips" id="examples"></div>
+    <label class="muted">규격서/화면 이미지 (선택 · 붙여넣기 가능)</label>
+    <input id="img" type="file" accept="image/*" />
+    <div id="imgname" class="muted"></div>
+    <button class="primary" id="go">화면 생성</button>
+    <div class="muted" id="status">대기 중…</div>
+  </div>
+  <div class="right">
+    <div class="tabs">
+      <div class="tab on" data-v="stage">미리보기</div>
+      <div class="tab" data-v="report">검수 리포트</div>
+      <div class="tab" data-v="json">스키마 JSON</div>
+      <button class="ghost" id="copy" style="margin-left:auto;font-size:12px;padding:6px 10px">JSON 복사</button>
+    </div>
+    <div id="stage"></div>
+    <div id="report"></div>
+    <div id="json"></div>
+  </div>
+
+<script>
+const TOKEN = s => "var(--"+s.split("/").pop()+")";
+const SIZE=(()=>{const m={};const t=[72,68,60,54,44,42,36,32],b=[40,36,34,32,30,28,26,24,22],l=[30,28,26,24,22,20,18,16];t.forEach((s,i)=>m["font-title-"+(i+1)+"-700"]=[s,700,1.3]);b.forEach((s,i)=>m["font-body-"+(i+1)+"-500"]=[s,500,1.5]);l.forEach((s,i)=>m["font-label-"+(i+1)+"-300"]=[s,400,1.4]);return m;})();
+const SPACE={"space-000":0,"space-100":8,"space-250":20,"space-400":32,"space-600":48,"space-900":72};
+const el=(t,c)=>{const e=document.createElement(t);if(c)e.className=c;return e;};
+
+function renderComponent(name,p={}){
+  const st=(p.State||"").toLowerCase();
+  if(name==="Radio"){const d=el("div","c-radio"+(st==="selected"?" sel":st==="focus"?" foc":""));d.innerHTML='<span class="ring"></span><span class="lbl">'+(p.label||"항목")+'</span>';return d;}
+  if(name==="Toggle"){const t=el("div","c-toggle"+(st==="on"?" on":""));t.innerHTML='<div class="h"></div>';return t;}
+  if(name==="Button"){const b=el("div","c-btn"+(st==="focus"?" foc":st==="disabled"?" dis":""));b.textContent=p.label||"버튼";return b;}
+  if(name==="Dropdown"){const d=el("div","c-dd"+(st==="focus"?" foc":""));d.innerHTML='<span class="v">'+(p.value||"30분")+'</span><span class="cv">▾</span>';return d;}
+  if(name==="PasswordInput"){const x=el("div","c-pin"+(st==="focus"?" foc":""));if(st!=="empty")x.innerHTML='<span class="star">'+(st==="focus"?"✱":"✱")+'</span>';return x;}
+  const ph=el("div","placeholder");ph.textContent=name+(p.label?(" · "+p.label):"");return ph;
+}
+function styleStr(name){const s=SIZE[name];return s?`font-size:${s[0]}px;font-weight:${s[1]};line-height:${s[2]}`:"font-size:24px";}
+function renderBlock(b){
+  if(b.type==="text"){const d=el("div","blk-text");d.setAttribute("style",styleStr(b.style)+";color:"+TOKEN(b.color||"core/soft-white")+(b.align==="center"?";text-align:center":"")+";width:100%");d.textContent=b.content||"";return d;}
+  if(b.type==="divider"){const d=el("div","divider");d.style.opacity=b.opacity!=null?b.opacity:0.1;return d;}
+  if(b.type==="spacer"){const d=el("div");d.style.height=(SPACE[b.size]||8)+"px";return d;}
+  if(b.type==="component")return renderComponent(b.component,b.props||{});
+  if(b.type==="group"){const g=el("div",b.direction==="horizontal"?"row":"col");g.style.gap=(SPACE[b.gap]||0)+"px";g.style.width="100%";
+    if(b.align==="center")g.style.justifyContent="center";if(b.align==="spaceBetween")g.style.justifyContent="space-between";
+    (b.children||[]).forEach(c=>g.appendChild(renderBlock(c)));return g;}
+  const ph=el("div","placeholder");ph.textContent="?"+b.type;return ph;
+}
+function renderScreen(S){
+  const wrap=el("div","screen");wrap.style.background=TOKEN(S.bg||"core/soft-black");
+  (S.children||[]).forEach(c=>wrap.appendChild(renderBlock(c)));
+  return wrap;
+}
+
+// 탭
+document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{
+  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("on"));t.classList.add("on");
+  ["stage","report","json"].forEach(v=>document.getElementById(v).style.display=(v===t.dataset.v?(v==="stage"?"block":"block"):"none"));
+});
+document.getElementById("stage").style.display="block";
+
+let lastJson="";
+const examples=["자동 전원 끄기 설정 페이지","자막 언어 선택 설정","비밀번호 변경 화면 PIN 4칸","채널 잠금 목록 화면 항목 5개"];
+const exWrap=document.getElementById("examples");
+examples.forEach(x=>{const c=el("span","chip");c.textContent=x;c.onclick=()=>document.getElementById("spec").value=x;exWrap.appendChild(c);});
+
+// 이미지 첨부(파일 선택 + 붙여넣기)
+let curImage=null;
+function setImage(dataUrl,name){curImage=dataUrl;document.getElementById("imgname").textContent=dataUrl?("🖼 "+(name||"붙여넣은 이미지")+" 첨부됨 (지우려면 다시 선택 취소)"):"";}
+document.getElementById("img").onchange=(e)=>{const f=e.target.files[0];if(!f){setImage(null);return;}const r=new FileReader();r.onload=()=>setImage(r.result,f.name);r.readAsDataURL(f);};
+window.addEventListener("paste",(e)=>{const it=[...(e.clipboardData?.items||[])].find(i=>i.type.startsWith("image/"));if(it){const f=it.getAsFile();const r=new FileReader();r.onload=()=>setImage(r.result,"clipboard."+f.type.split("/")[1]);r.readAsDataURL(f);}});
+
+document.getElementById("go").onclick=async()=>{
+  const spec=document.getElementById("spec").value.trim();
+  const ep=document.getElementById("endpoint").value.trim()||"/generate";
+  if(!spec && !curImage){setStatus("문장을 입력하거나 이미지를 첨부하세요",true);return;}
+  setStatus(curImage?"이미지 분석 + 생성 중…":"LLM 생성 중…");
+  try{
+    const res=await fetch(ep,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({spec, image:curImage})});
+    const data=await res.json();
+    if(data.error){setStatus("오류: "+data.error,true);return;}
+    const SCREEN={screen:data.screen};lastJson=JSON.stringify(SCREEN,null,2);
+    document.getElementById("json").textContent=lastJson;
+    const stage=document.getElementById("stage");stage.innerHTML="";stage.appendChild(renderScreen(data.screen));
+    const m=data._meta||{};
+    document.getElementById("report").innerHTML=
+      (m.fixes&&m.fixes.length?('<div class="fix">🔧 자동교정 '+m.fixes.length+'건:\n- '+m.fixes.join("\n- ")+"</div>\n\n"):"")+
+      (m.vocabErrors&&m.vocabErrors.length?('<div class="warn">⛔ 어휘 오류(카탈로그 밖):\n- '+m.vocabErrors.join("\n- ")+"</div>\n\n"):"")+
+      (m.warns&&m.warns.length?('<div class="warn">⚠️ 게이트 경고:\n- '+m.warns.join("\n- ")+"</div>"):"게이트 경고 없음 ✅")+
+      (m.attempts?("\n\n재생성 시도: "+m.attempts.length+"회"):"");
+    setStatus("완료 ✅ (경고 "+((m.warns||[]).length)+"건 / 교정 "+((m.fixes||[]).length)+"건"+((m.vocabErrors||[]).length?(" / 어휘오류 "+m.vocabErrors.length):"")+")");
+  }catch(e){setStatus("백엔드 연결 실패: "+e.message+" — 서버가 켜져 있는지 확인",true);}
+};
+document.getElementById("copy").onclick=()=>{if(lastJson){navigator.clipboard.writeText(lastJson);setStatus("JSON 복사됨 — Figma 플러그인 ②에 붙여넣기");}};
+function setStatus(s,err){const e=document.getElementById("status");e.textContent=s;e.style.color=err?"#E9B630":"#97979B";}
+</script>
+</body>
+</html>
