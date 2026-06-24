@@ -32,10 +32,39 @@ const SPACE = { "space-000": 0, "space-100": 8, "space-250": 20, "space-400": 32
 const PATTERNS = {
   TermsAgreement: {
     id: "236:10104",
-    // 텍스트 슬롯: 패턴 노드 안 @이름 레이어에 LLM이 준 값을 넣음
     textSlots: ["@title", "@term1_label", "@term1_body", "@term2_label", "@term2_body"],
-    // 체크박스 슬롯: @termN_check 인스턴스의 선택 상태(boolean)
-    checkSlots: ["@term1_check", "@term2_check"]
+    checkSlots: ["@term1_check", "@term2_check"]   // 체크/토글 isSelected(boolean)
+  },
+  PurchaseAuth: {
+    id: "182:11146",
+    textSlots: ["@title1", "@title2", "@plan", "@price", "@notice1", "@notice2"]
+  },
+  AgeRestriction: {
+    id: "55:6907",
+    textSlots: ["@title", "@desc", "@result_age", "@caveat"]
+  },
+  DailyWatchLimit: {
+    id: "184:11149",
+    textSlots: ["@title", "@desc", "@summary1", "@summary2"],
+    valueSlots: ["@hour", "@min"]                  // 드롭다운 내부 값 치환
+  },
+  ChannelInfoDisplay: {
+    id: "95:7184",
+    textSlots: ["@card1_title", "@card1_desc", "@card2_title", "@card2_desc"]
+  },
+  ScreenSetting: {
+    id: "80:7130",
+    textSlots: ["@title", "@desc", "@toggle_title", "@radio_title"],
+    checkSlots: ["@toggle"]
+  },
+  AutoPowerOff: {
+    id: "89:7108",
+    textSlots: ["@card1_title", "@card1_desc", "@card2_title", "@card2_desc"],
+    checkSlots: ["@toggle"]
+  },
+  LivetvOption: {
+    id: "200:10043",
+    textSlots: ["@section1", "@ch_num", "@ch_name", "@section2", "@section3"]
   }
 };
 
@@ -347,11 +376,17 @@ async function renderPattern(usePattern, fields) {
     const t = clone.findOne(n => n.type === "TEXT" && n.name === slot && notInstanceChild(n));
     if (t) { await ensureFont(t); t.characters = String(fields[slot]); filled.push(slot); }
   }
-  // 체크박스 상태 치환(boolean)
+  // 체크박스/토글 상태 치환(boolean)
   for (const slot of (reg.checkSlots || [])) {
     if (fields[slot] == null) continue;
     const inst = clone.findOne(n => n.type === "INSTANCE" && n.name === slot && notInstanceChild(n));
     if (inst) { try { inst.setProperties({ isSelected: String(!!fields[slot]) }); filled.push(slot); } catch (e) {} }
+  }
+  // 값 슬롯 치환(드롭다운 등 인스턴스 내부 첫 TEXT)
+  for (const slot of (reg.valueSlots || [])) {
+    if (fields[slot] == null) continue;
+    const inst = clone.findOne(n => n.type === "INSTANCE" && n.name === slot && notInstanceChild(n));
+    if (inst) { const t = inst.findOne(n => n.type === "TEXT"); if (t) { await ensureFont(t); t.characters = String(fields[slot]); filled.push(slot); } }
   }
   return { node: clone, filled };
 }
