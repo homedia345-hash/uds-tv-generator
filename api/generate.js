@@ -4,6 +4,11 @@ import { generateScreen } from "../backend/lib/generate.js";
 export const config = { api: { bodyParser: { sizeLimit: "12mb" } } };  // 이미지 수용
 
 export default async function handler(req, res) {
+  // CORS — Figma 플러그인(외부 origin)에서 호출 허용
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  if (req.method === "OPTIONS") return res.status(204).end();
   if (req.method !== "POST") return res.status(405).json({ error: "POST only" });
   const spec = String(req.body?.spec ?? "").trim();
   const image = req.body?.image || null;
