@@ -27,6 +27,21 @@ const CONTENT_PROP = {
 };
 const SPACE = { "space-000": 0, "space-100": 8, "space-250": 20, "space-400": 32, "space-600": 48, "space-900": 72 };
 
+// 재정리(표준판) 컴포넌트 레지스트리: setId로 정확히 타겟 + 카탈로그(State 기반) → 표준 variant 변환.
+// (이름 충돌[옛 Button vs 재정리 Button] 제거 — setId 우선, 없으면 이름 폴백)
+const TF = (v) => (v ? "true" : "false");
+const COMP = {
+  Button:        { id: "253:10146", variant: p => ({ variant: p.Type || "Basic", state: p.State === "Focus" ? "focused" : (p.State === "Selected" ? "selected" : "default"), isDisabled: TF(p.State === "Disabled") }), text: "label" },
+  Radio:         { id: "253:10171", variant: p => ({ state: p.State === "Focus" ? "focused" : "default", isSelected: TF(p.State === "Selected") }), text: "label" },
+  Toggle:        { id: "253:10187", variant: p => ({ isSelected: TF(p.State === "On") }) },
+  Checkbox:      { id: "253:10224", variant: p => ({ state: p.State === "Focus" ? "focused" : "default", isSelected: TF(p.State === "Selected"), isDisabled: TF(p.State === "Disabled") }), text: "label" },
+  Dropdown:      { id: "254:10127", variant: p => ({ state: p.State === "Focus" ? "focused" : (p.State === "Open" ? "open" : "default") }), text: "value" },
+  PasswordInput: { id: "254:10150", variant: p => ({ state: p.State === "Filled" ? "filled" : (p.State === "Focus" ? "focused" : "empty") }) },
+  IconButton:    { id: "259:10501", variant: p => ({ state: p.State === "Focus" ? "focused" : "default" }), text: "label" },
+  AgeRangeBar:   { id: "278:10171", variant: () => ({}) },
+  PopupCommon:   { popup: true }   // 이름 기반 폴백(title/body property)
+};
+
 // ---- 검수/교정용 데이터 ----
 const COLOR_HEX = {
   "core/soft-white": "#F5F5F5", "core/gray-700": "#CBCBCD", "core/gray-600": "#97979B",
@@ -112,6 +127,25 @@ function autoFix(SCREEN) {
   return fixes;
 }
 
+// 블록 type 누락/흔들림 보정(웹 렌더러 btype와 동일 규칙) — 옛 스키마/모델 드리프트 대응
+function inferType(b) {
+  if (!b || typeof b !== "object") return undefined;
+  if (b.type) return b.type;
+  if (b.component === "text" || (b.style != null && b.content != null && !b.component)) return "text";
+  if (b.divider === true) return "divider";
+  if (b.direction != null || Array.isArray(b.children)) return "group";
+  if (b.component) return "component";
+  if (Array.isArray(b.items)) return "list";
+  if (b.size != null) return "spacer";
+  return undefined;
+}
+function normalizeTypes(SCREEN) {
+  const walk = (b) => { if (!b || typeof b !== "object") return; if (!b.type) { const t = inferType(b); if (t) b.type = t; } (b.children || []).forEach(walk); };
+  const S = SCREEN.screen || {};
+  if (S.background && !S.bg) S.bg = S.background;
+  (S.children || []).forEach(walk);
+}
+
 let _compCache = null, _styleCache = null, _varCache = null;
 
 async function findComponents() {
@@ -147,29 +181,43 @@ function resolvePropKey(node, propName) {
   return null;
 }
 
-async function instantiate(displayName, props) {
+async function nodeForComponent(displayName) {
+  const cfg = COMP[displayName] || {};
+  if (cfg.id) { try { const n = await figma.getNodeByIdAsync(cfg.id); if (n) return n; } catch (e) {} }
   const comps = await findComponents();
-  const figName = COMPONENT_FIGMA_NAME[displayName] || displayName;
-  const node = comps[figName];
-  if (!node) throw new Error("컴포넌트를 찾을 수 없음: " + figName);
+  return comps[cfg.name || COMPONENT_FIGMA_NAME[displayName] || displayName] || null;
+}
+// 텍스트 채우기: TEXT 프로퍼티 있으면 그걸로, 없으면 내부 TEXT 직접 override
+async function setText(inst, node, val) {
+  const defs = node.componentPropertyDefinitions || {};
+  const tprop = Object.keys(defs).find(k => defs[k].type === "TEXT");
+  if (tprop) { try { inst.setProperties({ [tprop]: String(val) }); return; } catch (e) {} }
+  const t = inst.findOne(n => n.type === "TEXT"); if (t) { await ensureFont(t); t.characters = String(val); }
+}
+async function instantiate(displayName, props) {
+  props = props || {};
+  const cfg = COMP[displayName] || {};
+  const node = await nodeForComponent(displayName);
+  if (!node) throw new Error("컴포넌트를 찾을 수 없음: " + displayName);
   const inst = node.type === "COMPONENT_SET" ? node.defaultVariant.createInstance() : node.createInstance();
 
-  const setProps = {};
-  // variant props: definitions 중 VARIANT 타입
-  const defs = node.componentPropertyDefinitions || {};
-  const variantNames = Object.keys(defs).filter(k => defs[k].type === "VARIANT");
-  for (const vk of variantNames) { if (props[vk] != null) setProps[vk] = String(props[vk]); }
-
-  // content: property or text override
-  const map = CONTENT_PROP[displayName] || {};
-  const overrides = [];
-  for (const ck of Object.keys(map)) {
-    if (props[ck] == null) continue;
-    if (map[ck] === "__override__") { overrides.push(props[ck]); }
-    else { const key = resolvePropKey(node, map[ck]); if (key) setProps[key] = String(props[ck]); }
+  // variant: 레지스트리 변환 함수가 있으면 사용, 없으면 정의의 VARIANT 키를 그대로
+  if (cfg.variant) {
+    const vp = cfg.variant(props), clean = {};
+    Object.keys(vp).forEach(k => { if (vp[k] != null) clean[k] = String(vp[k]); });
+    if (Object.keys(clean).length) { try { inst.setProperties(clean); } catch (e) {} }
+  } else {
+    const defs = node.componentPropertyDefinitions || {}, sp = {};
+    Object.keys(defs).filter(k => defs[k].type === "VARIANT").forEach(vk => { if (props[vk] != null) sp[vk] = String(props[vk]); });
+    if (Object.keys(sp).length) { try { inst.setProperties(sp); } catch (e) {} }
   }
-  if (Object.keys(setProps).length) { try { inst.setProperties(setProps); } catch (e) {} }
-  for (const val of overrides) { const t = inst.findOne(n => n.type === "TEXT"); if (t) { await ensureFont(t); t.characters = String(val); } }
+
+  // 텍스트
+  if (cfg.text && props[cfg.text] != null) { await setText(inst, node, props[cfg.text]); }
+  if (cfg.popup) {
+    const map = CONTENT_PROP.PopupCommon || {};
+    for (const ck of Object.keys(map)) { if (props[ck] == null) continue; const key = resolvePropKey(node, map[ck]); if (key) { try { inst.setProperties({ [key]: String(props[ck]) }); } catch (e) {} } }
+  }
   return inst;
 }
 
@@ -215,6 +263,51 @@ async function build(b, parent) {
     const fill = b.align === "center" || b.align === "spaceBetween" || b.fill;
     if (parent.layoutMode === "VERTICAL" && fill) node.layoutSizingHorizontal = "FILL";
     for (const ch of (b.children || [])) await build(ch, node);
+  } else if (b.type === "card") {
+    node = figma.createFrame();
+    node.layoutMode = "VERTICAL"; node.primaryAxisSizingMode = "AUTO"; node.counterAxisSizingMode = "AUTO";
+    node.itemSpacing = 14; node.paddingTop = 30; node.paddingBottom = 30; node.paddingLeft = 36; node.paddingRight = 36;
+    node.cornerRadius = 16; node.fills = [await colorPaint("core/gray-300")];
+    parent.appendChild(node);
+    if (parent.layoutMode === "VERTICAL") node.layoutSizingHorizontal = "FILL";
+    for (const ch of (b.children || [])) await build(ch, node);
+  } else if (b.type === "lnb") {
+    node = figma.createFrame(); node.name = "LNB";
+    node.layoutMode = "VERTICAL"; node.primaryAxisSizingMode = "AUTO"; node.counterAxisSizingMode = "AUTO"; node.itemSpacing = 6; node.fills = [];
+    for (const it of (b.items || [])) {
+      const row = figma.createFrame(); row.layoutMode = "HORIZONTAL"; row.primaryAxisSizingMode = "AUTO"; row.counterAxisSizingMode = "AUTO";
+      row.paddingTop = 10; row.paddingBottom = 10; row.paddingLeft = 12; row.paddingRight = 12; row.itemSpacing = 12; row.counterAxisAlignItems = "CENTER"; row.fills = [];
+      if (it && it.selected) { const bar = figma.createRectangle(); bar.resize(4, 28); bar.fills = [await colorPaint("core/soft-white")]; row.appendChild(bar); }
+      const t = figma.createText(); const sty = it && it.selected ? "Bold" : "Medium";
+      try { await figma.loadFontAsync({ family: "Pretendard", style: sty }); } catch (e) { await figma.loadFontAsync({ family: "Pretendard", style: "Regular" }); t.fontName = { family: "Pretendard", style: "Regular" }; }
+      if (t.fontName !== figma.mixed) t.fontName = { family: "Pretendard", style: sty };
+      t.fontSize = 24; t.characters = (it && it.label) || "";
+      t.fills = [await colorPaint(it && it.selected ? "core/soft-white" : "core/gray-600")];
+      row.appendChild(t); node.appendChild(row);
+    }
+    parent.appendChild(node);
+  } else if (b.type === "breadcrumb") {
+    node = figma.createText(); await figma.loadFontAsync({ family: "Pretendard", style: "Medium" });
+    node.fontName = { family: "Pretendard", style: "Medium" }; node.fontSize = 22;
+    node.characters = (b.items || []).join("   〉   "); node.fills = [await colorPaint("core/gray-600")];
+    parent.appendChild(node);
+  } else if (b.type === "list") {
+    node = figma.createFrame(); node.layoutMode = "VERTICAL"; node.primaryAxisSizingMode = "AUTO"; node.counterAxisSizingMode = "AUTO"; node.itemSpacing = 10; node.fills = [];
+    for (const it of (b.items || [])) {
+      const row = figma.createFrame(); row.layoutMode = "HORIZONTAL"; row.primaryAxisSizingMode = "FIXED"; row.counterAxisSizingMode = "AUTO";
+      row.primaryAxisAlignItems = "SPACE_BETWEEN"; row.counterAxisAlignItems = "CENTER"; row.itemSpacing = 12;
+      row.paddingTop = 16; row.paddingBottom = 16; row.paddingLeft = 18; row.paddingRight = 18; row.cornerRadius = 10; row.resize(440, 60);
+      row.fills = it && it.focus ? [await colorPaint("core/soft-white")] : [];
+      const t = figma.createText(); const sty = it && it.focus ? "Bold" : "Medium";
+      try { await figma.loadFontAsync({ family: "Pretendard", style: sty }); t.fontName = { family: "Pretendard", style: sty }; } catch (e) { await figma.loadFontAsync({ family: "Pretendard", style: "Regular" }); t.fontName = { family: "Pretendard", style: "Regular" }; }
+      t.fontSize = 24; t.characters = (it && it.label) || "";
+      t.fills = [await colorPaint(it && it.focus ? "core/soft-black" : "core/gray-700")];
+      row.appendChild(t);
+      if (it && it.selected) { const dot = figma.createEllipse(); dot.resize(14, 14); dot.fills = [await colorPaint(it.focus ? "core/soft-black" : "brand/primary")]; row.appendChild(dot); }
+      node.appendChild(row);
+    }
+    parent.appendChild(node);
+    if (parent.layoutMode === "VERTICAL") node.layoutSizingHorizontal = "FILL";
   }
   return node;
 }
@@ -223,17 +316,60 @@ async function render(SCREEN) {
   const S = SCREEN.screen;
   const f = figma.createFrame(); f.name = (S.name || "screen") + " [자동생성]";
   f.resize(S.size ? S.size[0] : 1920, S.size ? S.size[1] : 1080);
-  f.fills = [await colorPaint(S.bg || "core/soft-black", 1)]; f.clipsContent = true;
-  f.layoutMode = "VERTICAL"; f.primaryAxisSizingMode = "FIXED"; f.counterAxisSizingMode = "FIXED";
+  f.fills = [await colorPaint(S.bg || S.background || "core/soft-black", 1)]; f.clipsContent = true;
+  f.primaryAxisSizingMode = "FIXED"; f.counterAxisSizingMode = "FIXED";
+  // 빈 캔버스 위치 잡기
+  const xs = figma.currentPage.children.map(n => n.x + n.width);
+  f.x = (xs.length ? Math.max.apply(null, xs) : 0) + 200; f.y = 0;
+
+  if (S.layout === "settingScreen") { await buildSettingScreen(S, f); return f; }
+  if (S.layout === "rightPanel") { await buildRightPanel(S, f); return f; }
+  if (S.layout === "bottomSheet") { await buildBottomSheet(S, f); return f; }
+
+  // stack | centered
+  f.layoutMode = "VERTICAL";
   const pad = SPACE[S.padding] || 72;
   f.paddingTop = pad; f.paddingBottom = pad; f.paddingLeft = pad; f.paddingRight = pad;
   f.itemSpacing = SPACE["space-600"];
   if (S.layout === "centered") { f.primaryAxisAlignItems = "CENTER"; f.counterAxisAlignItems = "CENTER"; }
-  // 빈 캔버스 위치 잡기
-  const xs = figma.currentPage.children.map(n => n.x + n.width);
-  f.x = (xs.length ? Math.max.apply(null, xs) : 0) + 200; f.y = 0;
   for (const ch of (S.children || [])) await build(ch, f);
   return f;
+}
+
+// 설정 화면: 좌측 LNB 칼럼 + 우측 콘텐츠(브레드크럼 + 카드 스택)
+async function buildSettingScreen(S, f) {
+  f.layoutMode = "HORIZONTAL"; f.itemSpacing = 0;
+  const kids = S.children || [];
+  const lnb = kids.find(c => c.type === "lnb"), crumb = kids.find(c => c.type === "breadcrumb");
+  const rest = kids.filter(c => c !== lnb && c !== crumb);
+  const left = figma.createFrame(); left.name = "LNB col"; left.layoutMode = "VERTICAL"; left.primaryAxisSizingMode = "FIXED"; left.counterAxisSizingMode = "FIXED";
+  left.resize(380, f.height); left.paddingTop = 56; left.paddingBottom = 56; left.paddingLeft = 40; left.paddingRight = 40; left.itemSpacing = 6; left.fills = [];
+  f.appendChild(left); left.layoutSizingVertical = "FILL";
+  if (lnb) await build(lnb, left);
+  const content = figma.createFrame(); content.name = "content"; content.layoutMode = "VERTICAL"; content.primaryAxisSizingMode = "FIXED"; content.counterAxisSizingMode = "FIXED";
+  content.paddingTop = 56; content.paddingBottom = 56; content.paddingLeft = 56; content.paddingRight = 56; content.itemSpacing = 32; content.fills = [await colorPaint("core/gray-200")]; content.clipsContent = true;
+  f.appendChild(content); content.layoutSizingHorizontal = "FILL"; content.layoutSizingVertical = "FILL";
+  if (crumb) { await build(crumb, content); const last = content.children[content.children.length - 1]; if (last && last.type === "TEXT") { last.layoutSizingHorizontal = "FILL"; last.textAlignHorizontal = "RIGHT"; } }
+  for (const ch of rest) await build(ch, content);
+}
+
+// 우측 패널: 우측에 패널 도킹(영상 영역은 배경으로 유지)
+async function buildRightPanel(S, f) {
+  f.layoutMode = "HORIZONTAL"; f.primaryAxisAlignItems = "MAX"; f.itemSpacing = 0;
+  const panel = figma.createFrame(); panel.name = "panel"; panel.layoutMode = "VERTICAL"; panel.primaryAxisSizingMode = "FIXED"; panel.counterAxisSizingMode = "FIXED";
+  panel.resize(560, f.height); panel.paddingTop = 56; panel.paddingBottom = 56; panel.paddingLeft = 40; panel.paddingRight = 40; panel.itemSpacing = 20;
+  panel.fills = [await colorPaint("core/soft-black", 0.94)];
+  f.appendChild(panel); panel.layoutSizingVertical = "FILL";
+  for (const ch of (S.children || [])) await build(ch, panel);
+}
+
+// 바텀시트: 본 화면 딤(배경) + 하단 시트
+async function buildBottomSheet(S, f) {
+  f.layoutMode = "VERTICAL"; f.primaryAxisAlignItems = "MAX"; f.itemSpacing = 0;
+  const sheet = figma.createFrame(); sheet.name = "sheet"; sheet.layoutMode = "VERTICAL"; sheet.primaryAxisSizingMode = "AUTO"; sheet.counterAxisSizingMode = "FIXED";
+  sheet.paddingTop = 48; sheet.paddingBottom = 48; sheet.paddingLeft = 72; sheet.paddingRight = 72; sheet.itemSpacing = 28; sheet.fills = [await colorPaint("core/soft-black")];
+  f.appendChild(sheet); sheet.layoutSizingHorizontal = "FILL";
+  for (const ch of (S.children || [])) await build(ch, sheet);
 }
 
 // ---- 게이트 검수: G1 글자 / G2·§8.3 대비 / G4 항목수 / G5 용어 / G8 되돌리기 / TOKEN ----
@@ -280,6 +416,7 @@ figma.ui.onmessage = async (msg) => {
   if (msg.type === "build") {
     try {
       const schema = typeof msg.schema === "string" ? JSON.parse(msg.schema) : msg.schema;
+      normalizeTypes(schema);                     // 0) type 누락/배경키 보정
       const fixes = autoFix(schema);              // 1) 자동교정(색 토큰화·용어)
       const warns = runGates(schema);             // 2) 검수(교정 후 잔여 경고)
       const frame = await render(schema);         // 3) 조립
