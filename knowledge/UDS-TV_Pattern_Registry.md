@@ -9,7 +9,8 @@
 | usePattern | 화면 | 슬롯 |
 |---|---|---|
 | **TermsAgreement** | 약관 동의 | `@title`, `@term1_label`, `@term1_body`, `@term1_check`(bool), `@term2_label`, `@term2_body`, `@term2_check`(bool) |
-| **PurchaseAuth** | 구매 비밀번호 인증 | `@title1`, `@title2`, `@plan`(요금제명), `@price`(숫자), `@notice1`, `@notice2` |
+| **PurchaseAuth** | 구매 비밀번호 인증(요금제 변경) | `@title1`, `@title2`, `@plan`(요금제명), `@price`(숫자), `@notice1`, `@notice2` |
+| **PasswordConfirm** | U+tv 비밀번호 확인(자녀보호·잠금 PIN) | `@title`, `@desc1`, `@desc2`, `@bottom_notice` |
 | **AgeRestriction** | 시청 연령 제한 | `@title`, `@desc`, `@result_age`(예 "15세 관람가"), `@caveat`, `@selected`(선택 라디오 라벨 배열) |
 | **DailyWatchLimit** | 일일 시청 한도(바텀시트) | `@title`, `@desc`, `@summary1`, `@summary2`, `@hour`(시 값), `@min`(분 값), `@selected`(선택 라디오 라벨 배열) |
 | **ChannelInfoDisplay** | 채널 정보 표시 설정 | `@card1_title`, `@card1_desc`, `@card2_title`, `@card2_desc`, `@selected`(선택 라디오 라벨 배열) |
