@@ -41,26 +41,31 @@ const PATTERNS = {
   },
   AgeRestriction: {
     id: "55:6907",
-    textSlots: ["@title", "@desc", "@result_age", "@caveat"]
+    textSlots: ["@title", "@desc", "@result_age", "@caveat"],
+    radioSelect: true
   },
   DailyWatchLimit: {
     id: "184:11149",
     textSlots: ["@title", "@desc", "@summary1", "@summary2"],
-    valueSlots: ["@hour", "@min"]                  // 드롭다운 내부 값 치환
+    valueSlots: ["@hour", "@min"],                 // 드롭다운 내부 값 치환
+    radioSelect: true
   },
   ChannelInfoDisplay: {
     id: "95:7184",
-    textSlots: ["@card1_title", "@card1_desc", "@card2_title", "@card2_desc"]
+    textSlots: ["@card1_title", "@card1_desc", "@card2_title", "@card2_desc"],
+    radioSelect: true
   },
   ScreenSetting: {
     id: "80:7130",
     textSlots: ["@title", "@desc", "@toggle_title", "@radio_title"],
-    checkSlots: ["@toggle"]
+    checkSlots: ["@toggle"],
+    radioSelect: true
   },
   AutoPowerOff: {
     id: "89:7108",
     textSlots: ["@card1_title", "@card1_desc", "@card2_title", "@card2_desc"],
-    checkSlots: ["@toggle"]
+    checkSlots: ["@toggle"],
+    radioSelect: true
   },
   LivetvOption: {
     id: "200:10043",
@@ -278,7 +283,7 @@ async function build(b, parent) {
     node.fontName = { family: "Pretendard", style: "Regular" };   // 기본 Inter→Pretendard 지정 후 글자 입력(미로드 폰트 에러 방지)
     node.characters = b.content || "";
     const id = await styleByName("UDS-TV/" + b.style);
-    if (id) await node.setTextStyleIdAsync(id);
+    if (id) { await node.setTextStyleIdAsync(id); const fn = node.fontName; if (fn && fn !== figma.mixed) { try { await figma.loadFontAsync(fn); } catch (e) {} } }  // 스타일 적용 후 폰트 로드(textAlign 에러 방지)
     node.fills = [await colorPaint(b.color || "core/soft-white")];
     if (b.align === "center") node.textAlignHorizontal = "CENTER";
     parent.appendChild(node);
@@ -387,6 +392,20 @@ async function renderPattern(usePattern, fields) {
     if (fields[slot] == null) continue;
     const inst = clone.findOne(n => n.type === "INSTANCE" && n.name === slot && notInstanceChild(n));
     if (inst) { const t = inst.findOne(n => n.type === "TEXT"); if (t) { await ensureFont(t); t.characters = String(fields[slot]); filled.push(slot); } }
+  }
+  // 라디오 선택 슬롯: @selected(라벨 배열)에 포함된 라벨의 Radio를 isSelected=true, 나머지는 false
+  if (reg.radioSelect && fields["@selected"] != null) {
+    const sel = (Array.isArray(fields["@selected"]) ? fields["@selected"] : [fields["@selected"]]).map(String);
+    const radios = clone.findAll(n => n.type === "INSTANCE" && notInstanceChild(n));
+    for (const r of radios) {
+      let mc = null; try { mc = await r.getMainComponentAsync(); } catch (e) {}
+      const setName = mc && mc.parent ? mc.parent.name : "";
+      if (setName !== "Radio") continue;
+      const t = r.findOne(n => n.type === "TEXT");
+      const label = t ? t.characters : "";
+      try { r.setProperties({ isSelected: String(sel.indexOf(label) >= 0) }); } catch (e) {}
+    }
+    filled.push("@selected");
   }
   return { node: clone, filled };
 }
