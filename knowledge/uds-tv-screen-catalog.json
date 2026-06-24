@@ -87,6 +87,13 @@
       "defaults": { "State": "Default" },
       "content": { "label": { "kind": "textOverride", "selector": "TEXT", "default": "동의" } },
       "usage": "약관/항목 동의 체크. 선택=Primary 면+흰 체크, 포커스=흰 보더. 라벨 좌측 박스. 약관 동의 패턴에 사용."
+    },
+    "Image": {
+      "setId": "369:14039",
+      "variantProps": { "ratio": ["16:9","1:1","4:3"] },
+      "defaults": { "ratio": "16:9" },
+      "content": {},
+      "usage": "이미지·일러스트 자리표시자(placeholder). 실제 사진/일러스트가 들어갈 영역. 안내 일러스트·썸네일·미리보기 등 그래픽 자리에 사용. 비율 variant(16:9/1:1/4:3)."
     }
   },
   "notes": [

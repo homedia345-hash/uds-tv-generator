@@ -3,45 +3,75 @@
 <head>
 <meta charset="utf-8" />
 <style>
-  body { font-family: 'Pretendard', -apple-system, sans-serif; margin: 0; padding: 16px; background:#1e1e1e; color:#f5f5f5; font-size:13px; }
+  html,body { height:100%; }
+  body { font-family: 'Pretendard', -apple-system, sans-serif; margin: 0; padding: 0; background:#1e1e1e; color:#f5f5f5; font-size:13px; display:flex; flex-direction:column; height:100vh; }
+  .scroll { flex:1; overflow-y:auto; padding:16px; }
   h3 { margin: 0 0 8px; font-size:14px; }
   textarea { width:100%; box-sizing:border-box; background:#29292a; color:#f5f5f5; border:1px solid #414143; border-radius:8px; padding:10px; font-family:ui-monospace,monospace; font-size:12px; resize:vertical; }
-  input { width:100%; box-sizing:border-box; background:#29292a; color:#f5f5f5; border:1px solid #414143; border-radius:8px; padding:8px; margin-bottom:10px; }
-  button { border:0; border-radius:8px; padding:10px 14px; font-weight:600; cursor:pointer; margin-right:8px; }
-  .primary { background:#fa057f; color:#fff; }
+  input { width:100%; box-sizing:border-box; background:#29292a; color:#f5f5f5; border:1px solid #414143; border-radius:8px; padding:8px; }
+  button { border:0; border-radius:8px; padding:10px 14px; font-weight:600; cursor:pointer; }
+  .primary { background:#fa057f; color:#fff; width:100%; }
   .ghost { background:#414143; color:#f5f5f5; }
   .row { margin-bottom:14px; }
   label { display:block; margin-bottom:6px; color:#97979b; }
-  #log { white-space:pre-wrap; background:#19191a; border-radius:8px; padding:10px; margin-top:12px; min-height:60px; color:#cbcbcd; font-size:12px; }
+  details { margin-bottom:14px; border:1px solid #29292a; border-radius:8px; padding:8px 10px; }
+  summary { cursor:pointer; color:#97979b; font-size:12px; }
+  details input { margin-top:8px; }
+  hr { border:0; border-top:1px solid #29292a; margin:16px 0; }
+  /* 처리 로그 — 항상 하단 고정, 스크롤과 분리 */
+  #log { white-space:pre-wrap; background:#19191a; border-top:1px solid #414143; padding:12px 16px; color:#cbcbcd; font-size:12px; max-height:140px; overflow-y:auto; flex:none; }
   .warn { color:#e9b630; }
+  .ok { color:#32d39a; }
+  .muted { color:#97979b; font-size:12px; }
 </style>
 </head>
 <body>
-  <div class="row">
+  <div class="scroll">
     <h3>UDS-TV 화면 생성</h3>
-    <label>① 자유문장 / 기능정의서 → 피그마에 바로 생성</label>
-    <textarea id="spec" rows="4" placeholder="예) 자동 전원 끄기 설정. 좌측 LNB '전원 자동 꺼짐' 선택, 오른쪽에 켜기 토글과 끄는 시간(사용 안 함/1~4시간) 라디오."></textarea>
+
+    <div class="row">
+      <label>① 자유문장 / 기능정의서 → 피그마에 바로 생성</label>
+      <textarea id="spec" rows="4" placeholder="예) 자동 전원 끄기 설정. 좌측 LNB '전원 자동 꺼짐' 선택, 오른쪽에 켜기 토글과 끄는 시간(사용 안 함/1~4시간) 라디오."></textarea>
+    </div>
+
+    <div class="row">
+      <label>규격서/화면 이미지 (선택)</label>
+      <input id="img" type="file" accept="image/*" />
+      <div id="imgname" class="muted" style="margin-top:6px"></div>
+      <div class="muted" style="margin-top:6px">💡 입력칸을 클릭한 뒤 <b>Cmd+V</b>로 클립보드의 이미지나 문장을 붙일 수 있어요.</div>
+    </div>
+
+    <div class="row">
+      <button class="primary" id="genBtn">입력 → 피그마에 생성</button>
+    </div>
+
+    <hr />
+
+    <div class="row">
+      <label>② 화면 스키마(JSON) — 생성 결과가 여기 채워집니다 (저장·재현용)</label>
+      <textarea id="schema" rows="9" placeholder='{ "screen": { "name":"...", "size":[1920,1080], "bg":"core/soft-black", "layout":"stack", "children":[ ... ] } }'></textarea>
+      <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+        <button class="ghost" id="buildBtn">JSON → 화면 생성 (백엔드 없이)</button>
+        <button class="ghost" id="reactBtn">⚛️ React 코드 생성</button>
+      </div>
+    </div>
+
+    <div class="row" id="reactRow" style="display:none">
+      <label>③ React 컴포넌트 (개발 전달용)</label>
+      <textarea id="reactOut" rows="12" readonly></textarea>
+      <button class="ghost" id="copyReactBtn" style="margin-top:8px">React 코드 복사</button>
+    </div>
+
+    <details>
+      <summary>⚙️ LLM 백엔드 엔드포인트 (보통 안 바꿔도 됨)</summary>
+      <input id="endpoint" value="https://uds-tv-generator.vercel.app/generate" />
+    </details>
   </div>
-  <div class="row">
-    <label>규격서/화면 이미지 (선택 · 붙여넣기 가능)</label>
-    <input id="img" type="file" accept="image/*" />
-    <div id="imgname" class="muted" style="color:#97979b;font-size:12px;margin-top:4px"></div>
-  </div>
-  <div class="row">
-    <label>LLM 백엔드 엔드포인트</label>
-    <input id="endpoint" value="https://uds-tv-generator.vercel.app/generate" />
-    <button class="primary" id="genBtn">입력 → 피그마에 생성</button>
-  </div>
-  <hr style="border-color:#414143" />
-  <div class="row">
-    <label>② 화면 스키마(JSON) 직접 입력 — 백엔드 없이 즉시 생성</label>
-    <textarea id="schema" rows="8" placeholder='{ "screen": { "name":"...", "size":[1920,1080], "bg":"core/soft-black", "layout":"stack", "children":[ ... ] } }'></textarea>
-    <button class="ghost" id="buildBtn">JSON → 화면 생성</button>
-  </div>
+
   <div id="log">대기 중…</div>
 
 <script>
-  const log = (m, cls) => { const el=document.getElementById('log'); el.innerHTML = (cls?('<span class="'+cls+'">'+m+'</span>'):m); };
+  const log = (m, cls) => { const el=document.getElementById('log'); el.innerHTML = (cls?('<span class="'+cls+'">'+m+'</span>'):m); el.scrollTop = el.scrollHeight; };
   function build(schema){ parent.postMessage({ pluginMessage:{ type:'build', schema } }, '*'); }
 
   document.getElementById('buildBtn').onclick = () => {
@@ -50,27 +80,103 @@
     log('생성 중…'); build(raw);
   };
 
-  // 이미지 첨부(파일 + 붙여넣기)
+  // ---- 화면 스키마 → React 컴포넌트(JSX) 변환 ----
+  const SPACE_PX = {"space-000":0,"space-100":8,"space-250":20,"space-400":32,"space-600":48,"space-900":72};
+  const tokenVar = c => c ? "var(--"+String(c).split("/").pop()+")" : "var(--soft-white)";
+  function inferType(b){
+    if(!b||typeof b!=="object") return undefined;
+    if(b.type) return b.type;
+    if(b.component==="text"||(b.style!=null&&b.content!=null&&!b.component)) return "text";
+    if(b.divider===true) return "divider";
+    if(b.direction!=null||Array.isArray(b.children)) return "group";
+    if(b.component) return "component";
+    if(Array.isArray(b.items)) return "list";
+    if(b.size!=null) return "spacer";
+    return undefined;
+  }
+  const escJsx = s => String(s==null?"":s).replace(/[{}<>]/g, m => ({"{":"&#123;","}":"&#125;","<":"&lt;",">":"&gt;"}[m]));
+  const pad = n => "  ".repeat(n);
+  function attrs(p){ return Object.keys(p||{}).map(k=>` ${k}={${JSON.stringify(String(p[k]))}}`).join(""); }
+  function nodeJSX(b, d){
+    const T = inferType(b); const i = pad(d);
+    if(T==="text") return `${i}<Text style="${b.style||""}" color="${b.color||"core/soft-white"}"${b.align==="center"?' align="center"':''}>${escJsx(b.content)}</Text>`;
+    if(T==="component") return `${i}<${b.component}${attrs(b.props)} />`;
+    if(T==="divider") return `${i}<Divider />`;
+    if(T==="spacer") return `${i}<div style={{ height: ${SPACE_PX[b.size]||8} }} />`;
+    if(T==="breadcrumb") return `${i}<Breadcrumb items={${JSON.stringify(b.items||[])}} />`;
+    if(T==="lnb") return `${i}<LNB items={${JSON.stringify(b.items||[])}} />`;
+    if(T==="list") return `${i}<List items={${JSON.stringify(b.items||[])}} />`;
+    if(T==="card"){ const k=(b.children||[]).map(c=>nodeJSX(c,d+1)).join("\n"); return `${i}<Card>\n${k}\n${i}</Card>`; }
+    if(T==="group"){
+      const dir = b.direction==="horizontal" ? "row" : "column";
+      const jc = b.align==="spaceBetween" ? "space-between" : (b.align==="center" ? "center" : "flex-start");
+      const sty = `{{ display: "flex", flexDirection: "${dir}", gap: ${SPACE_PX[b.gap]||0}, justifyContent: "${jc}", alignItems: "center" }}`;
+      const k = (b.children||[]).map(c=>nodeJSX(c,d+1)).join("\n");
+      return `${i}<div style=${sty}>\n${k}\n${i}</div>`;
+    }
+    return `${i}{/* unknown: ${T||"?"} */}`;
+  }
+  function pascal(name){ const base=(name||"Screen").replace(/[^a-zA-Z0-9가-힣]/g," ").split(" ").filter(Boolean).map(w=>w[0].toUpperCase()+w.slice(1)).join(""); return /^[A-Za-z]/.test(base)?base:("Screen"+base); }
+  function schemaToReact(SCREEN){
+    const S = (SCREEN&&SCREEN.screen)||SCREEN||{};
+    const name = pascal(S.name);
+    const kids = (S.children||[]).map(c=>nodeJSX(c,3)).join("\n");
+    const layout = S.layout||"stack";
+    const bg = tokenVar(S.bg||S.background||"core/soft-black");
+    return `// 자동 생성 — UDS-TV 화면 스키마 → React (개발 전달용 초안)
+import { Screen, Card, LNB, Breadcrumb, List, Divider, Text,
+         Button, Radio, Toggle, Checkbox, Dropdown, PasswordInput, IconButton, AgeRangeBar } from "@uds-tv/react";
+
+export default function ${name}() {
+  return (
+    <Screen layout="${layout}" bg="${S.bg||"core/soft-black"}" style={{ background: "${bg}" }}>
+${kids}
+    </Screen>
+  );
+}`;
+  }
+
+  document.getElementById('reactBtn').onclick = () => {
+    const raw = document.getElementById('schema').value.trim();
+    if(!raw){ log('먼저 ① 또는 ②에 화면 스키마(JSON)가 있어야 해요.','warn'); return; }
+    let obj; try { obj = JSON.parse(raw); } catch(e){ log('JSON 파싱 실패: '+e.message,'warn'); return; }
+    const code = schemaToReact(obj);
+    document.getElementById('reactOut').value = code;
+    document.getElementById('reactRow').style.display = 'block';
+    log('⚛️ React 코드 생성됨 — ③에서 확인·복사','ok');
+  };
+  document.getElementById('copyReactBtn').onclick = async () => {
+    const ta = document.getElementById('reactOut');
+    try { await navigator.clipboard.writeText(ta.value); log('React 코드 복사됨','ok'); }
+    catch(e){ ta.focus(); ta.select(); const ok=document.execCommand&&document.execCommand('copy'); log(ok?'React 코드 복사됨':'복사 실패 — ③ 박스에서 직접 선택·복사','ok'); }
+  };
+
+  // 이미지 첨부 — 파일 선택 / 버튼 클릭 시 클립보드 읽기 / 전역 paste 모두 지원
   let curImage=null;
   function setImage(d,n){curImage=d;document.getElementById('imgname').textContent=d?('🖼 '+(n||'이미지')+' 첨부됨'):'';}
   document.getElementById('img').onchange=(e)=>{const f=e.target.files[0];if(!f){setImage(null);return;}const r=new FileReader();r.onload=()=>setImage(r.result,f.name);r.readAsDataURL(f);};
-  window.addEventListener('paste',(e)=>{const it=[...(e.clipboardData?.items||[])].find(i=>i.type.startsWith('image/'));if(it){const f=it.getAsFile();const r=new FileReader();r.onload=()=>setImage(r.result,'clipboard');r.readAsDataURL(f);}});
+
+  function readBlob(blob,name){const r=new FileReader();r.onload=()=>{setImage(r.result,name||'clipboard');log('이미지 첨부됨 — 이제 "입력 → 피그마에 생성"','ok');};r.readAsDataURL(blob);}
+
+  // 입력칸 클릭 후 Cmd+V: 이미지면 첨부, 문장이면 textarea 기본 동작으로 붙음
+  window.addEventListener('paste',(e)=>{const it=[...(e.clipboardData?.items||[])].find(i=>i.type.startsWith('image/'));if(it){const f=it.getAsFile();readBlob(f,'clipboard.'+f.type.split('/')[1]);}});
 
   document.getElementById('genBtn').onclick = async () => {
     const spec = document.getElementById('spec').value.trim();
     const ep = document.getElementById('endpoint').value.trim();
     if(!spec && !curImage){ log('문장을 입력하거나 이미지를 첨부하세요.','warn'); return; }
-    if(!ep){ log('백엔드 엔드포인트가 없습니다. 서버를 켜거나 ②에 JSON을 붙여넣으세요.','warn'); return; }
+    if(!ep){ log('백엔드 엔드포인트가 없습니다. ②에 JSON을 붙여넣으세요.','warn'); return; }
     log(curImage?'이미지 분석 + 변환 중…':'백엔드에 변환 요청 중…');
     try {
       const res = await fetch(ep, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ spec, image: curImage }) });
       const data = await res.json();          // { screen, _meta } 기대
       if(data.error){ log('백엔드 오류: '+data.error,'warn'); return; }
       document.getElementById('schema').value = JSON.stringify({screen:data.screen}, null, 2);
+      if(document.getElementById('reactRow').style.display!=='none'){ try{ document.getElementById('reactOut').value = schemaToReact({screen:data.screen}); }catch(_){} }
       const m=data._meta||{};
       log('스키마 수신 → 피그마에 생성 중…' + (m.vocabErrors&&m.vocabErrors.length?(' (어휘오류 '+m.vocabErrors.length+')'):''));
       build({screen:data.screen});
-    } catch(e){ log('백엔드 연결 실패: '+e.message+' — 서버가 켜져 있는지 확인','warn'); }
+    } catch(e){ log('백엔드 연결 실패: '+e.message+' — 인터넷/엔드포인트 확인','warn'); }
   };
 
   onmessage = (e) => {
@@ -79,7 +185,7 @@
       let s='✅ 생성 완료 (id '+m.id+')';
       if(m.fixes&&m.fixes.length) s+='\n\n🔧 자동교정 '+m.fixes.length+'건:\n- '+m.fixes.join('\n- ');
       s+= (m.warns&&m.warns.length) ? '\n\n⚠️ 게이트 경고:\n- '+m.warns.join('\n- ') : '\n\n게이트 경고 없음';
-      log(s);
+      log(s,'ok');
     }
     if(m.type==='error'){ log('❌ '+m.message, 'warn'); }
   };

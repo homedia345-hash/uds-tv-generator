@@ -4,7 +4,7 @@
  * 스키마 규격: UDS-TV_ScreenSchema.md / 어휘: uds-tv-screen-catalog.json
  */
 
-figma.showUI(__html__, { width: 420, height: 560 });
+figma.showUI(__html__, { width: 440, height: 760 });
 
 // 표시이름 → Figma 컴포넌트(셋) 이름 매핑 (셋 이름이 다른 경우만 명시)
 const COMPONENT_FIGMA_NAME = {
@@ -39,6 +39,7 @@ const COMP = {
   PasswordInput: { id: "254:10150", variant: p => ({ state: p.State === "Filled" ? "filled" : (p.State === "Focus" ? "focused" : "empty") }) },
   IconButton:    { id: "259:10501", variant: p => ({ state: p.State === "Focus" ? "focused" : "default" }), text: "label" },
   AgeRangeBar:   { id: "278:10171", variant: () => ({}) },
+  Image:         { id: "369:14039", variant: p => ({ ratio: p.ratio || "16:9" }) },
   PopupCommon:   { popup: true }   // 이름 기반 폴백(title/body property)
 };
 
@@ -410,7 +411,7 @@ function runGates(SCREEN) {
     (b.children || []).forEach(walk);
   };
   (SCREEN.screen.children || []).forEach(walk);
-  if (!JSON.stringify(SCREEN).match(/취소|닫기|뒤로/)) warns.push("G8: 되돌리기(취소/닫기) 버튼 미발견");
+  if (!JSON.stringify(SCREEN).match(/취소|닫기|뒤로|이전/)) warns.push("G8: 되돌리기(취소/닫기/이전) 버튼 미발견");
   return warns;
 }
 

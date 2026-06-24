@@ -127,6 +127,7 @@ function renderComponent(name,p={}){
   if(name==="PasswordInput"){const x=el("div","c-pin"+(st==="focus"?" foc":""));if(st!=="empty")x.innerHTML='<span class="star">'+(st==="focus"?"✱":"✱")+'</span>';return x;}
   if(name==="Checkbox"){const c=el("div","c-check"+(st==="selected"?" sel":st==="focus"?" foc":""));c.innerHTML='<span class="box">'+(st==="selected"?"✓":"")+'</span><span class="lbl">'+(p.label||"항목")+'</span>';return c;}
   if(name==="IconButton"){const b=el("div","c-btn"+(st==="focus"?" foc":""));b.textContent=p.label||"메뉴";return b;}
+  if(name==="Image"){const r=(p.ratio||"16:9").split(":");const w=240,h=Math.round(w*(+r[1]||9)/(+r[0]||16));const d=el("div","c-img");d.style.cssText="width:"+w+"px;height:"+h+"px;background:rgba(65,65,67,.3);border:1px solid rgba(245,245,245,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;color:var(--gray-600);font-size:20px;flex:none";d.textContent="Img";return d;}
   const ph=el("div","placeholder");ph.textContent=name+(p.label?(" · "+p.label):"");return ph;
 }
 function styleStr(name){const s=SIZE[name];return s?`font-size:${s[0]}px;font-weight:${s[1]};line-height:${s[2]}`:"font-size:24px";}

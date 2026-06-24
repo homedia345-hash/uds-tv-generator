@@ -98,6 +98,6 @@ export function runGates(SCREEN) {
     (b.children || []).forEach(walk);
   };
   (SCREEN.screen.children || []).forEach(walk);
-  if (!JSON.stringify(SCREEN).match(/취소|닫기|뒤로/)) warns.push("G8: 되돌리기(취소/닫기) 버튼 미발견");
+  if (!JSON.stringify(SCREEN).match(/취소|닫기|뒤로|이전/)) warns.push("G8: 되돌리기(취소/닫기/이전) 버튼 미발견");
   return warns;
 }
