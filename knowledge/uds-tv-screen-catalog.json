@@ -85,8 +85,8 @@
       "setId": "232:10043",
       "variantProps": { "State": ["Default","Selected","Focus","Disabled"] },
       "defaults": { "State": "Default" },
-      "content": { "label": { "kind": "textOverride", "selector": "TEXT", "default": "동의" } },
-      "usage": "약관/항목 동의 체크. 선택=Primary 면+흰 체크, 포커스=흰 보더. 라벨 좌측 박스. 약관 동의 패턴에 사용."
+      "content": {},
+      "usage": "약관/항목 동의 체크박스(박스만, 32px). 선택=Primary 면+흰 체크, 포커스=흰 보더. ⚠️ 라벨 슬롯이 없으므로 라벨은 별도 text 블록으로 옆에 배치(group[Checkbox, text]). label prop 사용 금지."
     },
     "Image": {
       "setId": "369:14039",

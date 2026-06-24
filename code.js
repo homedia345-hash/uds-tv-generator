@@ -265,7 +265,7 @@ async function build(b, parent) {
     parent.appendChild(node);
     const fill = b.align === "center" || b.align === "spaceBetween" || b.fill;
     if (parent.layoutMode === "VERTICAL" && fill) node.layoutSizingHorizontal = "FILL";
-    for (const ch of (b.children || [])) await build(ch, node);
+    for (const ch of (b.children || [])) { const cn = await build(ch, node); if (cn && ch && ch.grow && node.layoutMode === "HORIZONTAL") { try { cn.layoutGrow = 1; } catch (e) {} } }
   } else if (b.type === "card") {
     node = figma.createFrame();
     node.layoutMode = "VERTICAL"; node.primaryAxisSizingMode = "AUTO"; node.counterAxisSizingMode = "AUTO";

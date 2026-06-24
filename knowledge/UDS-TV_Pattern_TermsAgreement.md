@@ -82,6 +82,8 @@
 
 > 입력 예: *"OTT 번들 요금제 약관 동의 화면. 필수 약관 2개(체크박스 + 전체보기), 이전/전체 동의 버튼."*
 
+> **레이아웃 = 좌우 2단**(최상위 group horizontal): 좌측 = 약관 컬럼(체크박스+전체보기 행들 + 본문 + 푸터), 우측 = 안내 일러스트 `Image`. 세로로만 쌓지 말 것(1080 넘침 방지).
+
 ```json
 { "screen": {
   "name": "약관 동의",
@@ -89,26 +91,40 @@
   "children": [
     { "type": "text", "style": "font-title-4-700", "color": "core/soft-white", "content": "필수 약관에 동의해 주세요." },
     { "type": "spacer", "size": "space-400" },
-    { "type": "group", "direction": "horizontal", "align": "spaceBetween", "children": [
-      { "type": "component", "component": "Checkbox", "props": { "State": "Selected", "label": "[필수] 서비스 이용약관 동의" } },
-      { "type": "component", "component": "Button", "props": { "Type": "Small", "State": "Default", "label": "전체보기" } }
-    ]},
-    { "type": "divider", "color": "core/soft-white", "opacity": 0.1 },
-    { "type": "group", "direction": "horizontal", "align": "spaceBetween", "children": [
-      { "type": "component", "component": "Checkbox", "props": { "State": "Default", "label": "[필수] 개인정보 수집·이용 동의" } },
-      { "type": "component", "component": "Button", "props": { "Type": "Small", "State": "Default", "label": "전체보기" } }
-    ]},
-    { "type": "spacer", "size": "space-600" },
-    { "type": "group", "direction": "horizontal", "gap": "space-100", "children": [
-      { "type": "component", "component": "Button", "props": { "Type": "Basic", "State": "Default", "label": "이전" } },
-      { "type": "component", "component": "Button", "props": { "Type": "Basic", "State": "Focus", "label": "전체 동의" } }
+    { "type": "group", "direction": "horizontal", "gap": "space-600", "align": "spaceBetween", "children": [
+      { "type": "group", "direction": "vertical", "gap": "space-250", "grow": true, "children": [
+        { "type": "group", "direction": "horizontal", "align": "spaceBetween", "children": [
+          { "type": "group", "direction": "horizontal", "gap": "space-250", "align": "center", "children": [
+            { "type": "component", "component": "Checkbox", "props": { "State": "Selected" } },
+            { "type": "text", "style": "font-body-6-500", "color": "core/soft-white", "content": "[필수] 제3자 개인정보 제공 동의" }
+          ]},
+          { "type": "component", "component": "Button", "props": { "Type": "Small", "State": "Default", "label": "전체보기" } }
+        ]},
+        { "type": "text", "style": "font-label-5-300", "color": "core/gray-600", "content": "제공 항목: 가입 번호 · 제공 받는 자: 주식회사 티빙 …" },
+        { "type": "group", "direction": "horizontal", "align": "spaceBetween", "children": [
+          { "type": "group", "direction": "horizontal", "gap": "space-250", "align": "center", "children": [
+            { "type": "component", "component": "Checkbox", "props": { "State": "Default" } },
+            { "type": "text", "style": "font-body-6-500", "color": "core/soft-white", "content": "[필수] 서비스 이용약관 동의" }
+          ]},
+          { "type": "component", "component": "Button", "props": { "Type": "Small", "State": "Default", "label": "전체보기" } }
+        ]},
+        { "type": "text", "style": "font-label-5-300", "color": "core/gray-600", "content": "본 상품은 월정액 요금제이나 추가 요금이 부과될 수 있습니다 …" },
+        { "type": "spacer", "size": "space-400" },
+        { "type": "group", "direction": "horizontal", "gap": "space-100", "children": [
+          { "type": "component", "component": "Button", "props": { "Type": "Basic", "State": "Default", "label": "이전" } },
+          { "type": "component", "component": "Button", "props": { "Type": "Basic", "State": "Focus", "label": "전체 동의" } }
+        ]}
+      ]},
+      { "type": "component", "component": "Image", "props": { "ratio": "4:3" } }
     ]}
   ]
 }}
 ```
 
-> ※ "전체보기" = Button `variant=Line`(라인 버튼). 배경 그라디언트·일러스트는 그래픽.
+> ※ **Checkbox는 박스만**(라벨 슬롯 없음) → 체크박스 라벨은 **항상 별도 `text` 블록**으로 둔다(`group[Checkbox, text]`). Checkbox props에 label을 넣지 말 것.
+> ※ "전체보기" = Button `variant=Line`(라인 버튼). 우측 안내 일러스트는 **`Image`(ratio 4:3)** 자리표시자로 반드시 포함.
 > ⚠️ **푸터는 [이전] / [전체 동의] 2개만**. "취소" 버튼을 추가하지 말 것 — 약관 화면에서는 **"이전"이 되돌리기(G8)** 역할을 한다. 버튼 3개로 만들지 않는다.
+> ⚠️ **세로 합이 1080을 넘지 않게** — 약관은 좌우 2단으로 배치하고 spacer를 과하게 넣지 않는다(푸터가 화면 밖으로 나가지 않도록).
 
 ---
 

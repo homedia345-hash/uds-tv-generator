@@ -155,7 +155,7 @@ function renderBlock(b){
   if(T==="list"){const n=el("div","list");(b.items||[]).forEach(it=>{const i=el("div","list-item"+(it&&it.focus?" foc":""));const t=el("span");t.textContent=(it&&it.label)||String(it||"");i.appendChild(t);if(it&&it.selected){i.appendChild(el("span","mk"));}n.appendChild(i);});return n;}
   if(T==="group"){const g=el("div",b.direction==="horizontal"?"row":"col");g.style.gap=(SPACE[b.gap]||0)+"px";g.style.width="100%";
     if(b.align==="center")g.style.justifyContent="center";if(b.align==="spaceBetween")g.style.justifyContent="space-between";
-    (b.children||[]).forEach(c=>g.appendChild(renderBlock(c)));return g;}
+    (b.children||[]).forEach(c=>{const ch=renderBlock(c);if(c&&c.grow){ch.style.flex="1 1 0";ch.style.minWidth="0";}g.appendChild(ch);});return g;}
   const ph=el("div","placeholder");ph.textContent="?"+(T||"unknown");return ph;
 }
 // 1920×1080 캔버스를 프리뷰 폭에 맞춰 축소(scale-to-fit) — 넘침 방지 + 피그마 비율 유지
