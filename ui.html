@@ -171,9 +171,16 @@ ${kids}
       const res = await fetch(ep, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ spec, image: curImage }) });
       const data = await res.json();          // { screen, _meta } 기대
       if(data.error){ log('백엔드 오류: '+data.error,'warn'); return; }
+      const m=data._meta||{};
+      if(data.usePattern){
+        const obj={usePattern:data.usePattern, fields:data.fields||{}};
+        document.getElementById('schema').value = JSON.stringify(obj, null, 2);
+        log('패턴 매칭: '+data.usePattern+' → 원본 복제 + 치환 중…');
+        build(obj);
+        return;
+      }
       document.getElementById('schema').value = JSON.stringify({screen:data.screen}, null, 2);
       if(document.getElementById('reactRow').style.display!=='none'){ try{ document.getElementById('reactOut').value = schemaToReact({screen:data.screen}); }catch(_){} }
-      const m=data._meta||{};
       log('스키마 수신 → 피그마에 생성 중…' + (m.vocabErrors&&m.vocabErrors.length?(' (어휘오류 '+m.vocabErrors.length+')'):''));
       build({screen:data.screen});
     } catch(e){ log('백엔드 연결 실패: '+e.message+' — 인터넷/엔드포인트 확인','warn'); }

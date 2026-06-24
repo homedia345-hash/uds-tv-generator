@@ -27,6 +27,18 @@ const CONTENT_PROP = {
 };
 const SPACE = { "space-000": 0, "space-100": 8, "space-250": 20, "space-400": 32, "space-600": 48, "space-900": 72 };
 
+// 패턴 레지스트리: 완성된 원본 패턴을 복제 후 @슬롯만 치환(원본 레이아웃·박스·일러스트 보존).
+// 에셋 늘면 여기에 추가 + 원본 노드의 텍스트/인스턴스에 @슬롯명 부여.
+const PATTERNS = {
+  TermsAgreement: {
+    id: "236:10104",
+    // 텍스트 슬롯: 패턴 노드 안 @이름 레이어에 LLM이 준 값을 넣음
+    textSlots: ["@title", "@term1_label", "@term1_body", "@term2_label", "@term2_body"],
+    // 체크박스 슬롯: @termN_check 인스턴스의 선택 상태(boolean)
+    checkSlots: ["@term1_check", "@term2_check"]
+  }
+};
+
 // 재정리(표준판) 컴포넌트 레지스트리: setId로 정확히 타겟 + 카탈로그(State 기반) → 표준 variant 변환.
 // (이름 충돌[옛 Button vs 재정리 Button] 제거 — setId 우선, 없으면 이름 폴백)
 const TF = (v) => (v ? "true" : "false");
@@ -315,6 +327,35 @@ async function build(b, parent) {
   return node;
 }
 
+// 패턴 복제+치환: 원본 패턴을 복제하고 @슬롯(텍스트/체크)만 입력값으로 교체
+async function renderPattern(usePattern, fields) {
+  const reg = PATTERNS[usePattern];
+  if (!reg) throw new Error("등록되지 않은 패턴: " + usePattern);
+  const src = await figma.getNodeByIdAsync(reg.id);
+  if (!src) throw new Error("패턴 원본을 찾을 수 없음: " + reg.id);
+  const clone = src.clone();
+  clone.name = usePattern + " [자동생성]";
+  // 빈 캔버스 위치
+  const xs = figma.currentPage.children.map(n => n.x + n.width);
+  clone.x = (xs.length ? Math.max.apply(null, xs) : 0) + 200; clone.y = 0;
+  fields = fields || {};
+  const filled = [];
+  // 텍스트 슬롯 치환
+  const notInstanceChild = n => n.id.indexOf(";") === -1;   // 인스턴스 내부 노드 제외(슬롯 오매칭 방지)
+  for (const slot of (reg.textSlots || [])) {
+    if (fields[slot] == null) continue;
+    const t = clone.findOne(n => n.type === "TEXT" && n.name === slot && notInstanceChild(n));
+    if (t) { await ensureFont(t); t.characters = String(fields[slot]); filled.push(slot); }
+  }
+  // 체크박스 상태 치환(boolean)
+  for (const slot of (reg.checkSlots || [])) {
+    if (fields[slot] == null) continue;
+    const inst = clone.findOne(n => n.type === "INSTANCE" && n.name === slot && notInstanceChild(n));
+    if (inst) { try { inst.setProperties({ isSelected: String(!!fields[slot]) }); filled.push(slot); } catch (e) {} }
+  }
+  return { node: clone, filled };
+}
+
 async function render(SCREEN) {
   const S = SCREEN.screen;
   const f = figma.createFrame(); f.name = (S.name || "screen") + " [자동생성]";
@@ -419,6 +460,16 @@ figma.ui.onmessage = async (msg) => {
   if (msg.type === "build") {
     try {
       const schema = typeof msg.schema === "string" ? JSON.parse(msg.schema) : msg.schema;
+      // 패턴 모드: usePattern이 있으면 완성 원본을 복제+치환(레이아웃 100% 보존)
+      const up = schema.usePattern || (schema.screen && schema.screen.usePattern);
+      if (up) {
+        const fields = schema.fields || (schema.screen && schema.screen.fields) || {};
+        const { node, filled } = await renderPattern(up, fields);
+        figma.currentPage.selection = [node];
+        figma.viewport.scrollAndZoomIntoView([node]);
+        figma.ui.postMessage({ type: "done", id: node.id, warns: [], fixes: ["패턴 복제: " + up + " (치환 " + filled.length + "슬롯)"] });
+        return;
+      }
       normalizeTypes(schema);                     // 0) type 누락/배경키 보정
       const fixes = autoFix(schema);              // 1) 자동교정(색 토큰화·용어)
       const warns = runGates(schema);             // 2) 검수(교정 후 잔여 경고)

@@ -32,7 +32,7 @@ app.post("/generate", async (req, res) => {
   if (!process.env.ANTHROPIC_API_KEY) return res.status(500).json({ error: "서버에 ANTHROPIC_API_KEY 미설정" });
   try {
     const out = await generateScreen(spec, image);
-    res.json({ screen: out.screen, _meta: { fixes: out.fixes, warns: out.warns, vocabErrors: out.vocabErrors, attempts: out.attempts } });
+    res.json({ screen: out.screen, usePattern: out.usePattern, fields: out.fields, _meta: { fixes: out.fixes, warns: out.warns, vocabErrors: out.vocabErrors, attempts: out.attempts } });
   } catch (e) {
     res.status(500).json({ error: e?.message ?? String(e) });
   }

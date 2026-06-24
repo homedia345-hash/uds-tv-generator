@@ -17,7 +17,7 @@ export default async function handler(req, res) {
   if (!process.env.ANTHROPIC_API_KEY) return res.status(500).json({ error: "ANTHROPIC_API_KEY 미설정 (Vercel 환경변수)" });
   try {
     const out = await generateScreen(spec, image);
-    res.json({ screen: out.screen, _meta: { fixes: out.fixes, warns: out.warns, vocabErrors: out.vocabErrors, attempts: out.attempts } });
+    res.json({ screen: out.screen, usePattern: out.usePattern, fields: out.fields, _meta: { fixes: out.fixes, warns: out.warns, vocabErrors: out.vocabErrors, attempts: out.attempts } });
   } catch (e) {
     res.status(500).json({ error: e?.message ?? String(e) });
   }
