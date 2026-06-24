@@ -1,5 +1,9 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "functions": {
+    "api/generate.js": { "includeFiles": "knowledge/**" },
+    "api/lint.js": { "includeFiles": "knowledge/**" }
+  },
   "rewrites": [
     { "source": "/", "destination": "/web/index.html" },
     { "source": "/generate", "destination": "/api/generate" },

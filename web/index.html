@@ -60,6 +60,29 @@
   .c-pin{width:64px;height:64px;border-radius:10px;background:rgba(151,151,155,.4);border:1px solid rgba(245,245,245,.1);display:inline-flex;align-items:center;justify-content:center}
   .c-pin.foc{background:var(--soft-white);transform:scale(1.07)} .c-pin .star{font-size:28px}
   .placeholder{border:1px dashed #6D6D72;color:#97979B;border-radius:8px;padding:10px 14px;font-size:13px}
+  /* ---- 설정 화면(LNB) 레이아웃 ---- */
+  .setting{width:1280px;max-width:100%;aspect-ratio:16/9;background:var(--soft-black);border-radius:12px;border:1px solid #29292A;display:flex;overflow:hidden}
+  .lnb{width:300px;flex:none;padding:40px 26px;display:flex;flex-direction:column;gap:6px;overflow:auto}
+  .lnb-item{font-size:24px;color:var(--gray-600);padding:10px 12px;border-radius:8px;border-left:4px solid transparent}
+  .lnb-item.sel{color:var(--soft-white);font-weight:700;border-left-color:var(--soft-white)}
+  .content{flex:1;min-width:0;padding:36px 44px;display:flex;flex-direction:column;gap:24px;overflow:auto}
+  .breadcrumb{align-self:flex-end;color:var(--gray-600);font-size:22px}
+  .card{background:var(--gray-300);border-radius:16px;padding:30px 36px;display:flex;flex-direction:column;gap:14px}
+  /* ---- 우측 패널 / 바텀시트 / 리스트 / 체크박스 ---- */
+  .rpanel{width:1280px;max-width:100%;aspect-ratio:16/9;background:var(--soft-black);border-radius:12px;border:1px solid #29292A;display:flex;justify-content:flex-end;overflow:hidden}
+  .rpanel .panel{width:34%;min-width:300px;height:100%;background:rgba(17,17,17,.94);padding:40px 30px;display:flex;flex-direction:column;gap:18px;border-left:1px solid #29292A}
+  .sheetwrap{width:1280px;max-width:100%;aspect-ratio:16/9;background:#000;border-radius:12px;border:1px solid #29292A;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden}
+  .sheet{background:var(--soft-black);padding:40px 56px;display:flex;flex-direction:column;gap:22px;border-top:1px solid rgba(245,245,245,.1)}
+  .list{display:flex;flex-direction:column;gap:10px;width:100%}
+  .list-item{font-size:24px;color:var(--gray-700);padding:16px 18px;border-radius:10px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+  .list-item.foc{background:var(--soft-white);color:var(--soft-black);font-weight:700}
+  .list-item .mk{width:14px;height:14px;border-radius:50%;background:var(--primary);flex:none}
+  .list-item.foc .mk{background:var(--soft-black)}
+  .c-check{display:inline-flex;align-items:center;gap:12px}
+  .c-check .box{width:28px;height:28px;border-radius:7px;border:2.5px solid var(--gray-500);display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;flex:none}
+  .c-check.sel .box{background:var(--primary);border-color:var(--primary)}
+  .c-check.foc .box{border-color:var(--soft-white)}
+  .c-check .lbl{font-size:24px;font-weight:500}
 </style>
 </head>
 <body>
@@ -102,22 +125,69 @@ function renderComponent(name,p={}){
   if(name==="Button"){const b=el("div","c-btn"+(st==="focus"?" foc":st==="disabled"?" dis":""));b.textContent=p.label||"버튼";return b;}
   if(name==="Dropdown"){const d=el("div","c-dd"+(st==="focus"?" foc":""));d.innerHTML='<span class="v">'+(p.value||"30분")+'</span><span class="cv">▾</span>';return d;}
   if(name==="PasswordInput"){const x=el("div","c-pin"+(st==="focus"?" foc":""));if(st!=="empty")x.innerHTML='<span class="star">'+(st==="focus"?"✱":"✱")+'</span>';return x;}
+  if(name==="Checkbox"){const c=el("div","c-check"+(st==="selected"?" sel":st==="focus"?" foc":""));c.innerHTML='<span class="box">'+(st==="selected"?"✓":"")+'</span><span class="lbl">'+(p.label||"항목")+'</span>';return c;}
+  if(name==="IconButton"){const b=el("div","c-btn"+(st==="focus"?" foc":""));b.textContent=p.label||"메뉴";return b;}
   const ph=el("div","placeholder");ph.textContent=name+(p.label?(" · "+p.label):"");return ph;
 }
 function styleStr(name){const s=SIZE[name];return s?`font-size:${s[0]}px;font-weight:${s[1]};line-height:${s[2]}`:"font-size:24px";}
+// 블록 타입 추론(모델이 type을 빠뜨리거나 component:"text" 식으로 흔들려도 렌더)
+function btype(b){
+  if(!b||typeof b!=="object") return undefined;
+  if(b.type) return b.type;
+  if(b.component==="text"||(b.style!=null&&b.content!=null&&!b.component)) return "text";
+  if(b.divider===true) return "divider";
+  if(b.direction!=null||Array.isArray(b.children)) return "group";
+  if(b.component) return "component";
+  if(Array.isArray(b.items)) return "list";
+  if(b.size!=null) return "spacer";
+  return undefined;
+}
 function renderBlock(b){
-  if(b.type==="text"){const d=el("div","blk-text");d.setAttribute("style",styleStr(b.style)+";color:"+TOKEN(b.color||"core/soft-white")+(b.align==="center"?";text-align:center":"")+";width:100%");d.textContent=b.content||"";return d;}
-  if(b.type==="divider"){const d=el("div","divider");d.style.opacity=b.opacity!=null?b.opacity:0.1;return d;}
-  if(b.type==="spacer"){const d=el("div");d.style.height=(SPACE[b.size]||8)+"px";return d;}
-  if(b.type==="component")return renderComponent(b.component,b.props||{});
-  if(b.type==="group"){const g=el("div",b.direction==="horizontal"?"row":"col");g.style.gap=(SPACE[b.gap]||0)+"px";g.style.width="100%";
+  const T=btype(b);
+  if(T==="text"){const d=el("div","blk-text");d.setAttribute("style",styleStr(b.style)+";color:"+TOKEN(b.color||"core/soft-white")+(b.align==="center"?";text-align:center":"")+";width:100%");d.textContent=b.content||"";return d;}
+  if(T==="divider"){const d=el("div","divider");d.style.opacity=b.opacity!=null?b.opacity:0.1;return d;}
+  if(T==="spacer"){const d=el("div");d.style.height=(SPACE[b.size]||8)+"px";return d;}
+  if(T==="component")return renderComponent(b.component,b.props||{});
+  if(T==="card"){const c=el("div","card");(b.children||[]).forEach(ch=>c.appendChild(renderBlock(ch)));return c;}
+  if(T==="breadcrumb"){const d=el("div","breadcrumb");d.textContent=(b.items||[]).join("   〉   ");return d;}
+  if(T==="lnb"){const n=el("div","lnb");(b.items||[]).forEach(it=>{const i=el("div","lnb-item"+(it&&it.selected?" sel":""));i.textContent=(it&&it.label)||String(it||"");n.appendChild(i);});return n;}
+  if(T==="list"){const n=el("div","list");(b.items||[]).forEach(it=>{const i=el("div","list-item"+(it&&it.focus?" foc":""));const t=el("span");t.textContent=(it&&it.label)||String(it||"");i.appendChild(t);if(it&&it.selected){i.appendChild(el("span","mk"));}n.appendChild(i);});return n;}
+  if(T==="group"){const g=el("div",b.direction==="horizontal"?"row":"col");g.style.gap=(SPACE[b.gap]||0)+"px";g.style.width="100%";
     if(b.align==="center")g.style.justifyContent="center";if(b.align==="spaceBetween")g.style.justifyContent="space-between";
     (b.children||[]).forEach(c=>g.appendChild(renderBlock(c)));return g;}
-  const ph=el("div","placeholder");ph.textContent="?"+b.type;return ph;
+  const ph=el("div","placeholder");ph.textContent="?"+(T||"unknown");return ph;
 }
 function renderScreen(S){
-  const wrap=el("div","screen");wrap.style.background=TOKEN(S.bg||"core/soft-black");
+  if(S.layout==="settingScreen")return renderSettingScreen(S);
+  if(S.layout==="rightPanel")return renderRightPanel(S);
+  if(S.layout==="bottomSheet")return renderBottomSheet(S);
+  const wrap=el("div","screen");wrap.style.background=TOKEN(S.bg||S.background||"core/soft-black");
   (S.children||[]).forEach(c=>wrap.appendChild(renderBlock(c)));
+  return wrap;
+}
+function renderRightPanel(S){
+  const wrap=el("div","rpanel");wrap.style.background=TOKEN(S.bg||S.background||"core/soft-black");
+  const panel=el("div","panel");
+  (S.children||[]).forEach(c=>panel.appendChild(renderBlock(c)));
+  wrap.appendChild(panel);return wrap;
+}
+function renderBottomSheet(S){
+  const wrap=el("div","sheetwrap");
+  const sheet=el("div","sheet");sheet.style.background=TOKEN(S.bg||S.background||"core/soft-black");
+  (S.children||[]).forEach(c=>sheet.appendChild(renderBlock(c)));
+  wrap.appendChild(sheet);return wrap;
+}
+function renderSettingScreen(S){
+  const wrap=el("div","setting");wrap.style.background=TOKEN(S.bg||S.background||"core/soft-black");
+  const kids=S.children||[];
+  const lnb=kids.find(c=>c.type==="lnb");
+  const crumb=kids.find(c=>c.type==="breadcrumb");
+  const rest=kids.filter(c=>c!==lnb&&c!==crumb);
+  if(lnb)wrap.appendChild(renderBlock(lnb));
+  const content=el("div","content");
+  if(crumb)content.appendChild(renderBlock(crumb));
+  rest.forEach(c=>content.appendChild(renderBlock(c)));
+  wrap.appendChild(content);
   return wrap;
 }
 
