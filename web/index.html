@@ -33,7 +33,7 @@
   #json,#report{flex:1;overflow:auto;padding:16px;white-space:pre-wrap;font-family:ui-monospace,monospace;font-size:12px;color:#CBCBCD;display:none}
   .warn{color:#E9B630}.fix{color:#32A08C}
   /* ---- 화면 캔버스 ---- */
-  .screen{width:1280px;max-width:100%;aspect-ratio:16/9;background:var(--soft-black);border-radius:12px;border:1px solid #29292A;
+  .screen{width:1920px;height:1080px;background:var(--soft-black);border-radius:12px;border:1px solid #29292A;
           padding:48px;display:flex;flex-direction:column;gap:32px;overflow:hidden;position:relative}
   .blk-text{}
   .row{display:flex;align-items:center}
@@ -47,10 +47,10 @@
   .c-radio.foc{background:var(--soft-white);border-radius:10px;padding:8px 18px}
   .c-radio.foc .ring{border-color:var(--gray-300)} .c-radio.foc .lbl{color:var(--soft-black)}
   .c-radio .lbl{font-size:24px;font-weight:500}
-  .c-toggle{width:60px;height:30px;border-radius:20px;background:var(--gray-500);position:relative;flex:none}
-  .c-toggle.on{background:var(--primary)}
-  .c-toggle .h{position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:var(--soft-white)}
-  .c-toggle.on .h{left:33px}
+  .c-toggle{width:70px;height:36px;border-radius:18px;background:var(--gray-500);position:relative;flex:none}
+  .c-toggle.on{background:linear-gradient(90deg,#b73fff,#ef3484)}
+  .c-toggle .h{position:absolute;top:4px;left:4px;width:28px;height:28px;border-radius:50%;background:var(--soft-white)}
+  .c-toggle.on .h{left:38px}
   .c-btn{background:var(--gray-400);border:1px solid var(--gray-500);border-radius:12px;padding:18px 36px;font-size:24px;font-weight:700;color:var(--soft-white)}
   .c-btn.foc{background:var(--soft-white);color:var(--soft-black);border:0}
   .c-btn.dis{opacity:.3}
@@ -61,7 +61,7 @@
   .c-pin.foc{background:var(--soft-white);transform:scale(1.07)} .c-pin .star{font-size:28px}
   .placeholder{border:1px dashed #6D6D72;color:#97979B;border-radius:8px;padding:10px 14px;font-size:13px}
   /* ---- 설정 화면(LNB) 레이아웃 ---- */
-  .setting{width:1280px;max-width:100%;aspect-ratio:16/9;background:var(--soft-black);border-radius:12px;border:1px solid #29292A;display:flex;overflow:hidden}
+  .setting{width:1920px;height:1080px;background:var(--soft-black);border-radius:12px;border:1px solid #29292A;display:flex;overflow:hidden}
   .lnb{width:300px;flex:none;padding:40px 26px;display:flex;flex-direction:column;gap:6px;overflow:auto}
   .lnb-item{font-size:24px;color:var(--gray-600);padding:10px 12px;border-radius:8px;border-left:4px solid transparent}
   .lnb-item.sel{color:var(--soft-white);font-weight:700;border-left-color:var(--soft-white)}
@@ -69,9 +69,9 @@
   .breadcrumb{align-self:flex-end;color:var(--gray-600);font-size:22px}
   .card{background:var(--gray-300);border-radius:16px;padding:30px 36px;display:flex;flex-direction:column;gap:14px}
   /* ---- 우측 패널 / 바텀시트 / 리스트 / 체크박스 ---- */
-  .rpanel{width:1280px;max-width:100%;aspect-ratio:16/9;background:var(--soft-black);border-radius:12px;border:1px solid #29292A;display:flex;justify-content:flex-end;overflow:hidden}
+  .rpanel{width:1920px;height:1080px;background:var(--soft-black);border-radius:12px;border:1px solid #29292A;display:flex;justify-content:flex-end;overflow:hidden}
   .rpanel .panel{width:34%;min-width:300px;height:100%;background:rgba(17,17,17,.94);padding:40px 30px;display:flex;flex-direction:column;gap:18px;border-left:1px solid #29292A}
-  .sheetwrap{width:1280px;max-width:100%;aspect-ratio:16/9;background:#000;border-radius:12px;border:1px solid #29292A;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden}
+  .sheetwrap{width:1920px;height:1080px;background:#000;border-radius:12px;border:1px solid #29292A;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden}
   .sheet{background:var(--soft-black);padding:40px 56px;display:flex;flex-direction:column;gap:22px;border-top:1px solid rgba(245,245,245,.1)}
   .list{display:flex;flex-direction:column;gap:10px;width:100%}
   .list-item{font-size:24px;color:var(--gray-700);padding:16px 18px;border-radius:10px;display:flex;justify-content:space-between;align-items:center;gap:12px}
@@ -157,6 +157,18 @@ function renderBlock(b){
     (b.children||[]).forEach(c=>g.appendChild(renderBlock(c)));return g;}
   const ph=el("div","placeholder");ph.textContent="?"+(T||"unknown");return ph;
 }
+// 1920×1080 캔버스를 프리뷰 폭에 맞춰 축소(scale-to-fit) — 넘침 방지 + 피그마 비율 유지
+let _fitHandler=null;
+function mountScreen(S){
+  const stage=document.getElementById("stage");stage.innerHTML="";
+  const holder=el("div");holder.style.transformOrigin="top left";
+  holder.appendChild(renderScreen(S));
+  stage.appendChild(holder);
+  const fit=()=>{const avail=stage.clientWidth-48; const scale=Math.min(1, avail/1920); holder.style.transform="scale("+scale+")"; holder.style.width="1920px"; holder.style.height=(1080*scale)+"px";};
+  fit();
+  if(_fitHandler)window.removeEventListener("resize",_fitHandler);
+  _fitHandler=fit;window.addEventListener("resize",fit);
+}
 function renderScreen(S){
   if(S.layout==="settingScreen")return renderSettingScreen(S);
   if(S.layout==="rightPanel")return renderRightPanel(S);
@@ -220,7 +232,7 @@ document.getElementById("go").onclick=async()=>{
     if(data.error){setStatus("오류: "+data.error,true);return;}
     const SCREEN={screen:data.screen};lastJson=JSON.stringify(SCREEN,null,2);
     document.getElementById("json").textContent=lastJson;
-    const stage=document.getElementById("stage");stage.innerHTML="";stage.appendChild(renderScreen(data.screen));
+    mountScreen(data.screen);
     const m=data._meta||{};
     document.getElementById("report").innerHTML=
       (m.fixes&&m.fixes.length?('<div class="fix">🔧 자동교정 '+m.fixes.length+'건:\n- '+m.fixes.join("\n- ")+"</div>\n\n"):"")+
