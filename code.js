@@ -224,7 +224,8 @@ async function instantiate(displayName, props) {
 async function ensureFont(textNode) {
   const fn = textNode.fontName;
   if (fn === figma.mixed) return;
-  try { await figma.loadFontAsync(fn); } catch (e) { await figma.loadFontAsync({ family: "Pretendard", style: "Regular" }); }
+  try { await figma.loadFontAsync(fn); }
+  catch (e) { const fb = { family: "Pretendard", style: "Regular" }; await figma.loadFontAsync(fb); try { textNode.fontName = fb; } catch (_) {} }
 }
 
 async function build(b, parent) {
@@ -232,6 +233,7 @@ async function build(b, parent) {
   if (b.type === "text") {
     node = figma.createText();
     await figma.loadFontAsync({ family: "Pretendard", style: "Regular" });
+    node.fontName = { family: "Pretendard", style: "Regular" };   // 기본 Inter→Pretendard 지정 후 글자 입력(미로드 폰트 에러 방지)
     node.characters = b.content || "";
     const id = await styleByName("UDS-TV/" + b.style);
     if (id) await node.setTextStyleIdAsync(id);
