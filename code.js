@@ -510,7 +510,10 @@ function runGates(SCREEN) {
     (b.children || []).forEach(walk);
   };
   (SCREEN.screen.children || []).forEach(walk);
-  if (!JSON.stringify(SCREEN).match(/취소|닫기|뒤로|이전/)) warns.push("G8: 되돌리기(취소/닫기/이전) 버튼 미발견");
+  // G8: centered(PIN/확인/인증)·bottomSheet·rightPanel은 리모컨 '뒤로'가 취소 → 경고 제외. 입력에 없는 되돌리기 버튼 임의 추가 금지.
+  var lay = SCREEN.screen.layout || "stack";
+  var remoteBackOk = lay === "centered" || lay === "bottomSheet" || lay === "rightPanel";
+  if (!remoteBackOk && !JSON.stringify(SCREEN).match(/취소|닫기|뒤로|이전/)) warns.push("G8: 되돌리기 경로 확인(stack/설정 흐름) — 입력에 되돌리기가 있으면 포함하되, 없으면 추가하지 말 것(리모컨 '뒤로'가 취소).");
   return warns;
 }
 

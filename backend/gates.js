@@ -98,6 +98,10 @@ export function runGates(SCREEN) {
     (b.children || []).forEach(walk);
   };
   (SCREEN.screen.children || []).forEach(walk);
-  if (!JSON.stringify(SCREEN).match(/취소|닫기|뒤로|이전/)) warns.push("G8: 되돌리기(취소/닫기/이전) 버튼 미발견");
+  // G8: 되돌리기 경로. centered(PIN/확인/인증)·bottomSheet·rightPanel은 리모컨 '뒤로'가 취소이므로 화면 내 버튼 불필요 → 경고 제외.
+  // ※ 입력에 없는 되돌리기 버튼을 임의로 추가하지 말 것(공통 룰). 경고는 stack/설정 흐름에서 '입력에 되돌리기가 있는데 빠진 경우' 점검용.
+  const lay = SCREEN.screen.layout || "stack";
+  const remoteBackOk = lay === "centered" || lay === "bottomSheet" || lay === "rightPanel";
+  if (!remoteBackOk && !JSON.stringify(SCREEN).match(/취소|닫기|뒤로|이전/)) warns.push("G8: 되돌리기 경로 확인(stack/설정 흐름) — 입력에 되돌리기가 있으면 포함하되, 입력에 없으면 추가하지 말 것(리모컨 '뒤로'가 취소).");
   return warns;
 }
