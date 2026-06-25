@@ -40,8 +40,8 @@ const PATTERNS = {
     textSlots: ["@title1", "@title2", "@plan", "@price", "@notice1", "@notice2"]
   },
   PasswordConfirm: {
-    id: "407:14033",
-    textSlots: ["@title", "@desc1", "@desc2", "@bottom_notice"]
+    id: "415:14033",
+    textSlots: ["@title", "@desc1", "@desc2", "@bottom_notice", "@reset_notice"]
   },
   AgeRestriction: {
     id: "55:6907",
