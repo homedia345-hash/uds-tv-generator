@@ -22,12 +22,43 @@
     "size": [1920, 1080],
     "bg": "core/soft-black",          // colors 토큰
     "sheen": true,                     // 상단 화이트 sheen(0→14%)
-    "padding": "space-900",            // 외곽 패딩(space 토큰)
+    "padding": "space-900",            // 외곽 패딩(space 토큰). 미지정 시 기본 60(화면 외곽 여백)
     "layout": "stack",                 // stack | centered | settingScreen
     "children": [ <block>, ... ]
   }
 }
 ```
+
+### ★ Layout & Safe Area (TV — 필수)
+
+실제 설정 화면 측정 기준(Spacing 파운데이션 §Layout & Safe Area). 모든 화면 1920×1080.
+
+| 항목 | 값 | 비고 |
+|---|---|---|
+| **Safe Area** | 좌우 50 · 상하 18px | TV 오버스캔(가장자리 잘림 한계). **핵심·조작 요소는 이 안쪽** |
+| **화면 외곽 여백** | 60px | 콘텐츠 좌우 시작 기본값(Safe Area 안쪽). 1920 기준 60~1860 |
+| 설정 LNB 폭 | 462px | 좌단부터, 메뉴 좌패딩 76 |
+| 콘텐츠 ↔ LNB | 60px | 설정 본문 좌측 여백(x≈522) |
+| 콘텐츠 폭(설정) | 1338px | x=522 ~ 1860 |
+| 브레드크럼 | top 50 · 우 60 | 우상단 경로 |
+| 섹션/카드 간격 | 48~72px | space-600 ~ space-900 |
+
+> 생성 시: stack/centered 외곽 패딩 **60** 기본, settingScreen은 LNB 462(좌패딩 76)·콘텐츠 좌우 60. 어떤 요소도 Safe Area(50/18) 밖으로 나가지 않게 한다(C1 이탈 금지와 동일선상).
+
+### ★ 타이포 활용 (UI 영역별 — 실제 화면 기준)
+
+| UI 영역 | 크기 | textStyle |
+|---|---|---|
+| 화면 대제목 | 44~48 | font-title-5-700 |
+| 요약/상세 패널 제목 | 42 | font-title-6-700 |
+| 모듈/카드 제목(소타이틀) | 36 | font-title-7-700 |
+| 팝업 제목 | 32 | font-title-8-700 |
+| 금액·수치 강조 | 30 | font-body-5-500 |
+| **설정 LNB·라디오·버튼·팝업 본문** | **28** | **font-body-6-500** |
+| 본문·설명·브레드크럼·섹션 라벨 | 24 | font-body-8-500 / font-label-4-300 |
+| 뱃지·메타·하단 보조 | 18 | font-label-7-300 (비핵심 한정) |
+
+> 핵심 가독 텍스트(메뉴·선택지·본문)는 24pt↑. 제목=Bold, 본문/라벨=Medium/Regular.
 
 | layout | 의미 |
 |---|---|

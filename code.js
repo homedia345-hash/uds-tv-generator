@@ -26,6 +26,10 @@ const CONTENT_PROP = {
   Dropdown: { value: "__override__" }
 };
 const SPACE = { "space-000": 0, "space-100": 8, "space-250": 20, "space-400": 32, "space-600": 48, "space-900": 72 };
+// 레이아웃/Safe Area 기준(실제 설정 화면 측정값, Spacing 파운데이션 §Layout & Safe Area)
+const SAFE = { x: 50, y: 18 };          // TV 오버스캔 안전영역(가장자리 잘림 한계) — 핵심 콘텐츠는 이 안쪽
+const SCREEN_MARGIN = 60;               // 화면 외곽 여백(Safe Area 안쪽 권장값)
+const LNB_WIDTH = 462, LNB_PAD_X = 76;  // 설정 LNB 칼럼 폭 / 메뉴 좌패딩
 
 // 패턴 레지스트리: 완성된 원본 패턴을 복제 후 @슬롯만 치환(원본 레이아웃·박스·일러스트 보존).
 // 에셋 늘면 여기에 추가 + 원본 노드의 텍스트/인스턴스에 @슬롯명 부여.
@@ -448,9 +452,9 @@ async function render(SCREEN) {
   if (S.layout === "rightPanel") { await buildRightPanel(S, f); return f; }
   if (S.layout === "bottomSheet") { await buildBottomSheet(S, f); return f; }
 
-  // stack | centered
+  // stack | centered — 외곽 여백 = 화면 마진 60(Safe Area 안쪽). 핵심 요소가 Safe Area(50/18) 밖으로 나가지 않게.
   f.layoutMode = "VERTICAL";
-  const pad = SPACE[S.padding] || 72;
+  const pad = SPACE[S.padding] || SCREEN_MARGIN;
   f.paddingTop = pad; f.paddingBottom = pad; f.paddingLeft = pad; f.paddingRight = pad;
   f.itemSpacing = SPACE["space-600"];
   if (S.layout === "centered") { f.primaryAxisAlignItems = "CENTER"; f.counterAxisAlignItems = "CENTER"; }
@@ -465,11 +469,11 @@ async function buildSettingScreen(S, f) {
   const lnb = kids.find(c => c.type === "lnb"), crumb = kids.find(c => c.type === "breadcrumb");
   const rest = kids.filter(c => c !== lnb && c !== crumb);
   const left = figma.createFrame(); left.name = "LNB col"; left.layoutMode = "VERTICAL"; left.primaryAxisSizingMode = "FIXED"; left.counterAxisSizingMode = "FIXED";
-  left.resize(380, f.height); left.paddingTop = 56; left.paddingBottom = 56; left.paddingLeft = 40; left.paddingRight = 40; left.itemSpacing = 6; left.fills = [];
+  left.resize(LNB_WIDTH, f.height); left.paddingTop = 60; left.paddingBottom = 60; left.paddingLeft = LNB_PAD_X; left.paddingRight = 40; left.itemSpacing = 6; left.fills = [];
   f.appendChild(left); left.layoutSizingVertical = "FILL";
   if (lnb) await build(lnb, left);
   const content = figma.createFrame(); content.name = "content"; content.layoutMode = "VERTICAL"; content.primaryAxisSizingMode = "FIXED"; content.counterAxisSizingMode = "FIXED";
-  content.paddingTop = 56; content.paddingBottom = 56; content.paddingLeft = 56; content.paddingRight = 56; content.itemSpacing = 32; content.fills = [await colorPaint("core/gray-200")]; content.clipsContent = true;
+  content.paddingTop = 60; content.paddingBottom = 60; content.paddingLeft = 60; content.paddingRight = 60; content.itemSpacing = 32; content.fills = [await colorPaint("core/gray-200")]; content.clipsContent = true;
   f.appendChild(content); content.layoutSizingHorizontal = "FILL"; content.layoutSizingVertical = "FILL";
   if (crumb) { await build(crumb, content); const last = content.children[content.children.length - 1]; if (last && last.type === "TEXT") { last.layoutSizingHorizontal = "FILL"; last.textAlignHorizontal = "RIGHT"; } }
   for (const ch of rest) await build(ch, content);
