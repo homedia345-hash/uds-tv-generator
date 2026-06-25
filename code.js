@@ -43,6 +43,10 @@ const PATTERNS = {
     id: "415:14033",
     textSlots: ["@title", "@desc1", "@desc2", "@bottom_notice", "@reset_notice"]
   },
+  AgeViewingUnlock: {
+    id: "437:14033",
+    textSlots: ["@title", "@desc", "@time", "@customer_notice"]   // PasswordConfirm 형제(centered). Img·시계+시간·고객센터 고정 슬롯
+  },
   AgeRestriction: {
     id: "55:6907",
     textSlots: ["@title", "@desc", "@result_age", "@caveat"],
