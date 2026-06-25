@@ -94,6 +94,22 @@ const COMP = {
   IconButton:    { id: "259:10501", variant: p => ({ state: p.State === "Focus" ? "focused" : "default" }), text: "label" },
   AgeRangeBar:   { id: "278:10171", variant: () => ({}) },
   Image:         { id: "369:14039", variant: p => ({ ratio: p.ratio || "16:9" }) },
+  // 추가 컴포넌트(재정리) — variantProps 패스스루(카탈로그 prop명 = 셋 variant명)
+  TextField:        { id: "491:14870", variant: p => ({ state: p.state || "normal" }) },
+  PasswordTextField:{ id: "499:14861", variant: p => ({ state: p.state || "normal" }) },
+  Tag:              { id: "495:14870", variant: p => ({ type: p.type || "black" }) },
+  ThumbnailTag:     { id: "495:14882", variant: p => ({ name: p.name || "all" }) },
+  LiveChannelTag:   { id: "495:14967", variant: p => ({ state: p.state || "normal" }) },
+  Keynotice:        { id: "495:14981", variant: p => ({ name: p.name || "channel_shift" }) },
+  Scrim:            { id: "496:14870", variant: p => ({ Type: p.Type || "SolidScrim" }) },
+  ProgressBar:      { id: "496:14885", variant: p => ({ Progress: p.Progress || "0%" }) },
+  Scroll:           { id: "496:14909", variant: p => ({ Location: p.Location || "0%" }) },
+  PaginationDot:    { id: "496:14929", variant: p => ({ "Property 1": p.state || "nor" }) },
+  Tab:              { id: "492:15126", variant: p => ({ state: p.state || "normal", size: String(p.size || "120") }) },
+  SeasonListTab:    { id: "492:15153", variant: p => ({ state: p.state || "normal" }) },
+  ModuleTab:        { id: "492:15171", variant: p => ({ state: p.state || "nor" }) },
+  SettingStepper:   { id: "496:14947", variant: p => ({ step: String(p.step || "1") }) },
+  Stepper:          { id: "496:15040", variant: p => ({ type: p.type || "tving", step: String(p.step || "1") }) },
   PopupCommon:   { popup: true }   // 이름 기반 폴백(title/body property)
 };
 

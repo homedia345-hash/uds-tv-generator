@@ -94,6 +94,111 @@
       "defaults": { "ratio": "16:9" },
       "content": {},
       "usage": "이미지·일러스트 자리표시자(placeholder). 실제 사진/일러스트가 들어갈 영역. 안내 일러스트·썸네일·미리보기 등 그래픽 자리에 사용. 비율 variant(16:9/1:1/4:3)."
+    },
+    "TextField": {
+      "setId": "491:14870",
+      "variantProps": { "state": ["normal","focus","focus_input","normal_input","normal_result"] },
+      "defaults": { "state": "normal" },
+      "content": {},
+      "usage": "실제 검색/입력 바(Search bar). 기본/포커스/입력중/결과 상태. 검색어·텍스트 입력."
+    },
+    "PasswordTextField": {
+      "setId": "499:14861",
+      "variantProps": { "state": ["normal","inactive","complete","focus_entering","focus_complete"] },
+      "defaults": { "state": "normal" },
+      "content": {},
+      "usage": "실제 설정 PIN 입력 칸. 기본/비활성/입력완료/포커스(입력중·완료) 상태."
+    },
+    "Tag": {
+      "setId": "495:14870",
+      "variantProps": { "type": ["black","magenta"] },
+      "defaults": { "type": "black" },
+      "content": {},
+      "usage": "기본 태그 pill. black=기본, magenta=강조(브랜드 핑크, 아이콘 동반 가능). 짧은 상태/표식 라벨."
+    },
+    "ThumbnailTag": {
+      "setId": "495:14882",
+      "variantProps": { "name": ["all","7","12","15","19","adult","free","play","rental","days_3","purchase","mobiletv","viewing rate","preference","notice","next","premium_club","premium_club_v","UHD","intestine"] },
+      "defaults": { "name": "all" },
+      "content": {},
+      "usage": "썸네일 위 오버레이 뱃지(등급·이용형태·정보). 다크 60% 반투명 면+흰 글자. 등급색은 문구 병행."
+    },
+    "LiveChannelTag": {
+      "setId": "495:14967",
+      "variantProps": { "state": ["normal","select","focus"] },
+      "defaults": { "state": "normal" },
+      "content": {},
+      "usage": "실시간 채널 편집 태그(normal/select/focus)."
+    },
+    "Keynotice": {
+      "setId": "495:14981",
+      "variantProps": { "name": ["channel_shift","channel_up","scene_shift","option","green"] },
+      "defaults": { "name": "channel_shift" },
+      "content": {},
+      "usage": "화면 하단 키 안내(채널/장면 이동·옵션·컬러키). 실제 디자인 리소스."
+    },
+    "Scrim": {
+      "setId": "496:14870",
+      "variantProps": { "Type": ["SolidScrim","GradientScrim_Top","Gradient_Down"] },
+      "defaults": { "Type": "SolidScrim" },
+      "content": {},
+      "usage": "콘텐츠 위 딤/그라디언트 스크림. 영상·썸네일 위 텍스트 가독 확보."
+    },
+    "ProgressBar": {
+      "setId": "496:14885",
+      "variantProps": { "Progress": ["0%","20%","50%","80%","100%"] },
+      "defaults": { "Progress": "0%" },
+      "content": {},
+      "usage": "재생·진행률 표시 바."
+    },
+    "Scroll": {
+      "setId": "496:14909",
+      "variantProps": { "Location": ["0%","50%","100%"] },
+      "defaults": { "Location": "0%" },
+      "content": {},
+      "usage": "스크롤 위치 인디케이터(세로)."
+    },
+    "PaginationDot": {
+      "setId": "496:14929",
+      "variantProps": { "state": ["nor","sel"] },
+      "defaults": { "state": "nor" },
+      "content": {},
+      "usage": "페이지·캐러셀 도트(미선택/선택)."
+    },
+    "Tab": {
+      "setId": "492:15126",
+      "variantProps": { "state": ["normal","select","focus"], "size": ["120","168"] },
+      "defaults": { "state": "normal", "size": "120" },
+      "content": {},
+      "usage": "실제 트렌드/카테고리 탭(TAB/Trend). select=현재, focus=리모컨 위치(면 반전). size=탭 너비."
+    },
+    "SeasonListTab": {
+      "setId": "492:15153",
+      "variantProps": { "state": ["normal","focus","select"] },
+      "defaults": { "state": "normal" },
+      "content": {},
+      "usage": "상세 화면 시즌 목록 탭."
+    },
+    "ModuleTab": {
+      "setId": "492:15171",
+      "variantProps": { "state": ["nor","foc","sel"] },
+      "defaults": { "state": "nor" },
+      "content": {},
+      "usage": "모듈 헤더 탭 버튼."
+    },
+    "SettingStepper": {
+      "setId": "496:14947",
+      "variantProps": { "step": ["1","2","3","4"] },
+      "defaults": { "step": "1" },
+      "content": {},
+      "usage": "설정/소스 연결 단계 진행 스테퍼(실제 디자인). 번호 원형+연결선."
+    },
+    "Stepper": {
+      "setId": "496:15040",
+      "variantProps": { "type": ["tving","disney"], "step": ["1","2","3"] },
+      "defaults": { "type": "tving", "step": "1" },
+      "content": {},
+      "usage": "가입 단계 진행 스테퍼(실제 디자인). 서비스별 색(tving·disney)으로 진행분 구분(§8.5 그래픽 토큰)."
     }
   },
   "notes": [
