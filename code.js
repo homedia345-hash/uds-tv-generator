@@ -132,8 +132,8 @@ const COMP = {
   Stepper:          { id: "496:15040", variant: p => ({ type: p.type || "tving", step: String(p.step || "1") }) },
   Loading:          { id: "111:11602", variant: p => ({ sequence: String(p.sequence || "1") }) },
   SettingLNB:       { id: "31:11873", variant: p => ({ Type: p.Type || "Open", name: p.name || "2depth" }) },
-  ProductCard:      { id: "539:19810", variant: () => ({}) },
-  PopupCommon:   { id: "525:15176", variant: p => ({ btn: p.btn || "2btn" }), popup: true }   // 버튼 1/2/3개 변형(btn). title/body=컴포넌트 프로퍼티
+  ProductCard:      { id: "551:15394", variant: () => ({}) },
+  PopupCommon:   { id: "544:15145", variant: p => ({ btn: p.btn || "2btn" }), popup: true }   // 재정리 PopupCommon. 버튼 1/2/3개 변형(btn). title/body=컴포넌트 프로퍼티
 };
 
 // ---- 검수/교정용 데이터 ----

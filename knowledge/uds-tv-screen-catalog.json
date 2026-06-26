@@ -72,14 +72,14 @@
       "usage": "시청 연령 누적 범위 바(전체~19세 5노드). 등급고지/자녀보호 연령제한 화면."
     },
     "PopupCommon": {
-      "setId": "525:15176",
+      "setId": "544:15145",
       "variantProps": { "btn": ["1btn","2btn","3btn"] },
       "defaults": { "btn": "2btn" },
       "content": {
-        "title": { "kind": "property", "key": "title#526:0", "default": "구매 비밀번호 설정" },
-        "body": { "kind": "property", "key": "body#526:4", "default": "본문 내용" }
+        "title": { "kind": "property", "key": "title#544:0", "default": "자녀 보호 설정 안내" },
+        "body": { "kind": "property", "key": "body#544:1", "default": "어린이·교육 채널만 보이도록 설정합니다." }
       },
-      "usage": "중앙 모달. 타이틀+본문+버튼. **버튼 개수 1/2/3 선택(btn=1btn|2btn|3btn)**. 짧은 단일/다중 결정."
+      "usage": "중앙 모달(재정리 PopupCommon). 타이틀+본문+버튼. **버튼 개수 1/2/3 선택(btn=1btn|2btn|3btn)**. 짧은 단일/다중 결정."
     },
     "Checkbox": {
       "setId": "232:10043",
@@ -215,7 +215,7 @@
       "usage": "설정 좌측 네비게이션 모듈(LNB). 메뉴 항목 리스트(현재 항목 강조). settingScreen 좌측 칼럼(폭 462)."
     },
     "ProductCard": {
-      "setId": "539:19810",
+      "setId": "551:15394",
       "variantProps": {},
       "defaults": {},
       "content": {},
