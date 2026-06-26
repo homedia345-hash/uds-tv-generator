@@ -43,6 +43,22 @@ const PATTERNS = {
     id: "182:11146",
     textSlots: ["@title1", "@title2", "@plan", "@price", "@notice1", "@notice2"]
   },
+  BillPayment: {
+    id: "515:14947",
+    textSlots: ["@title", "@desc", "@product", "@price", "@notice1", "@notice2", "@reset_notice"]   // 청구서 결제(구매 PIN). 2단: 좌 카드/PIN/버튼, 우 Img/비번초기화
+  },
+  ChangeProgress: {
+    id: "523:14126",
+    textSlots: ["@title"]   // 요금제/처리 변경 진행(로딩+스피너). @title="…변경 중입니다."
+  },
+  FreePassSelect: {
+    id: "524:14128",
+    textSlots: ["@title"]   // 자유이용권/상품 선택(가로 카드 리스트 + 이전/확인)
+  },
+  PurchaseOption: {
+    id: "524:14152",
+    textSlots: ["@title", "@desc", "@product", "@price"]   // 상품 옵션 선택(좌 옵션 라디오 / 우 요약 패널)
+  },
   PasswordConfirm: {
     id: "415:14033",
     textSlots: ["@title", "@desc1", "@desc2", "@bottom_notice", "@reset_notice"]
@@ -114,7 +130,10 @@ const COMP = {
   ModuleTab:        { id: "492:15171", variant: p => ({ state: p.state || "nor" }) },
   SettingStepper:   { id: "496:14947", variant: p => ({ step: String(p.step || "1") }) },
   Stepper:          { id: "496:15040", variant: p => ({ type: p.type || "tving", step: String(p.step || "1") }) },
-  PopupCommon:   { popup: true }   // 이름 기반 폴백(title/body property)
+  Loading:          { id: "111:11602", variant: p => ({ sequence: String(p.sequence || "1") }) },
+  SettingLNB:       { id: "31:11873", variant: p => ({ Type: p.Type || "Open", name: p.name || "2depth" }) },
+  ProductCard:      { id: "539:19810", variant: () => ({}) },
+  PopupCommon:   { id: "525:15176", variant: p => ({ btn: p.btn || "2btn" }), popup: true }   // 버튼 1/2/3개 변형(btn). title/body=컴포넌트 프로퍼티
 };
 
 // ---- 검수/교정용 데이터 ----

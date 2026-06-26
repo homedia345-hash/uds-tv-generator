@@ -10,6 +10,10 @@
 |---|---|---|
 | **TermsAgreement** | 약관 동의 | `@title`, `@term1_label`, `@term1_body`, `@term1_check`(bool), `@term2_label`, `@term2_body`, `@term2_check`(bool) |
 | **PurchaseAuth** | 구매 비밀번호 인증(요금제 변경) | `@title1`, `@title2`, `@plan`(요금제명), `@price`(숫자), `@notice1`, `@notice2` |
+| **BillPayment** | 청구서 결제(구매 PIN 인증) — PurchaseAuth 형제. 2단 레이아웃(좌: 안내/구매상품 카드/PIN/이전·결제하기, 우: Img/비밀번호 초기화) | `@title`, `@desc`, `@product`(구매 상품명), `@price`(금액), `@notice1`, `@notice2`, `@reset_notice` |
+| **PurchaseOption** | 상품 옵션 선택(좌: 시청기간/화질/언어 라디오, 우: 요약 패널 + 금액) | `@title`, `@desc`, `@product`(상품명), `@price`(금액) |
+| **FreePassSelect** | 자유이용권/상품 선택(가로 카드 리스트 + 이전/확인) | `@title` |
+| **ChangeProgress** | 요금제/처리 변경 진행(중앙 로딩 안내 + 스피너) | `@title`("○○로 변경 중입니다.") |
 | **PasswordConfirm** | U+tv 비밀번호 확인(자녀보호·잠금 PIN) | `@title`, `@desc1`, `@desc2`, `@bottom_notice`, `@reset_notice`("최초 비밀번호는 …") |
 | **AgeViewingUnlock** | 19세 이상 시청 가능(성인 인증 안내) — PasswordConfirm 형제(centered). Img·시계+남은시간·고객센터 포함 | `@title`, `@desc`, `@time`(남은 시간 "1시간 00분"), `@customer_notice`("고객센터 : 국번없이 101번") |
 | **AgeRestriction** | 시청 연령 제한 | `@title`, `@desc`, `@result_age`(예 "15세 관람가"), `@caveat`, `@selected`(선택 라디오 라벨 배열) |

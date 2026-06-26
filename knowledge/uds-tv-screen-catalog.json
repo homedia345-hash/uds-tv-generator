@@ -72,14 +72,14 @@
       "usage": "시청 연령 누적 범위 바(전체~19세 5노드). 등급고지/자녀보호 연령제한 화면."
     },
     "PopupCommon": {
-      "setId": "49:6905",
-      "variantProps": {},
-      "defaults": {},
+      "setId": "525:15176",
+      "variantProps": { "btn": ["1btn","2btn","3btn"] },
+      "defaults": { "btn": "2btn" },
       "content": {
-        "title": { "kind": "property", "key": "title#54:7", "default": "자녀 보호 설정 안내" },
-        "body": { "kind": "property", "key": "body#54:8", "default": "어린이·교육 채널만 보이도록 설정합니다." }
+        "title": { "kind": "property", "key": "title#526:0", "default": "구매 비밀번호 설정" },
+        "body": { "kind": "property", "key": "body#526:4", "default": "본문 내용" }
       },
-      "usage": "중앙 모달. 타이틀+본문+[취소/확인] 2버튼(Button 인스턴스 합성). 짧은 단일 결정."
+      "usage": "중앙 모달. 타이틀+본문+버튼. **버튼 개수 1/2/3 선택(btn=1btn|2btn|3btn)**. 짧은 단일/다중 결정."
     },
     "Checkbox": {
       "setId": "232:10043",
@@ -199,6 +199,27 @@
       "defaults": { "type": "tving", "step": "1" },
       "content": {},
       "usage": "가입 단계 진행 스테퍼(실제 디자인). 서비스별 색(tving·disney)으로 진행분 구분(§8.5 그래픽 토큰)."
+    },
+    "Loading": {
+      "setId": "111:11602",
+      "variantProps": { "sequence": ["1","2","3","4","5","6","7","8"] },
+      "defaults": { "sequence": "1" },
+      "content": {},
+      "usage": "로딩 스피너(시퀀스 1~8 애니메이션 프레임). 처리/변경 진행 중 표시. ChangeProgress 패턴 중앙에 사용."
+    },
+    "SettingLNB": {
+      "setId": "31:11873",
+      "variantProps": { "Type": ["Close","Open"], "name": ["1depth","arrow_area","2depth","3depth"] },
+      "defaults": { "Type": "Open", "name": "2depth" },
+      "content": {},
+      "usage": "설정 좌측 네비게이션 모듈(LNB). 메뉴 항목 리스트(현재 항목 강조). settingScreen 좌측 칼럼(폭 462)."
+    },
+    "ProductCard": {
+      "setId": "539:19810",
+      "variantProps": {},
+      "defaults": {},
+      "content": {},
+      "usage": "상품/요금제 가격 선택 카드(상품명 + 금액 + 부가세 포함). 재정리(Pretendard). 가로 카드 리스트(자유이용권/상품옵션 선택 등)에 사용."
     }
   },
   "notes": [
