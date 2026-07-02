@@ -560,7 +560,36 @@ function runGates(SCREEN) {
   return warns;
 }
 
+// 생성물 추적: 생성한 최상위 노드에 표식 + 루트에 ID 목록 저장(리셋용, 플러그인 재실행에도 유지)
+async function trackGenerated(node) {
+  try { node.setPluginData("udsGenerated", "1"); } catch (e) {}
+  let ids = [];
+  try { ids = JSON.parse(figma.root.getPluginData("udsGeneratedIds") || "[]"); } catch (e) {}
+  if (ids.indexOf(node.id) === -1) ids.push(node.id);
+  try { figma.root.setPluginData("udsGeneratedIds", JSON.stringify(ids)); } catch (e) {}
+}
+// 리셋: 이 플러그인이 생성한 노드를 모두 제거(생성 직후든, 생성 안 했든 언제나 호출 가능)
+async function resetGenerated() {
+  let ids = [];
+  try { ids = JSON.parse(figma.root.getPluginData("udsGeneratedIds") || "[]"); } catch (e) {}
+  let count = 0;
+  for (const id of ids) {
+    try { const n = await figma.getNodeByIdAsync(id); if (n && !n.removed) { n.remove(); count++; } } catch (e) {}
+  }
+  try { figma.root.setPluginData("udsGeneratedIds", "[]"); } catch (e) {}
+  return count;
+}
+
 figma.ui.onmessage = async (msg) => {
+  if (msg.type === "reset") {
+    try {
+      const count = await resetGenerated();
+      figma.ui.postMessage({ type: "reset-done", count });
+    } catch (e) {
+      figma.ui.postMessage({ type: "error", message: "리셋 실패: " + String(e.message || e) });
+    }
+    return;
+  }
   if (msg.type === "build") {
     try {
       const schema = typeof msg.schema === "string" ? JSON.parse(msg.schema) : msg.schema;
@@ -569,6 +598,7 @@ figma.ui.onmessage = async (msg) => {
       if (up) {
         const fields = schema.fields || (schema.screen && schema.screen.fields) || {};
         const { node, filled } = await renderPattern(up, fields);
+        await trackGenerated(node);
         figma.currentPage.selection = [node];
         figma.viewport.scrollAndZoomIntoView([node]);
         figma.ui.postMessage({ type: "done", id: node.id, warns: [], fixes: ["패턴 복제: " + up + " (치환 " + filled.length + "슬롯)"] });
@@ -578,6 +608,7 @@ figma.ui.onmessage = async (msg) => {
       const fixes = autoFix(schema);              // 1) 자동교정(색 토큰화·용어)
       const warns = runGates(schema);             // 2) 검수(교정 후 잔여 경고)
       const frame = await render(schema);         // 3) 조립
+      await trackGenerated(frame);
       figma.currentPage.selection = [frame];
       figma.viewport.scrollAndZoomIntoView([frame]);
       figma.ui.postMessage({ type: "done", id: frame.id, warns, fixes });
