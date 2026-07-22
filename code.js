@@ -136,6 +136,48 @@ const COMP = {
   PopupCommon:   { id: "544:15145", variant: p => ({ btn: p.btn || "2btn" }), popup: true }   // 재정리 PopupCommon. 버튼 1/2/3개 변형(btn). title/body=컴포넌트 프로퍼티
 };
 
+// 편성 거버넌스 모듈 + 홈 조립 컴포넌트(우리가 만든 로컬 컴포넌트) — 코드/이름으로 인스턴스화
+const MODULES = {
+  "MainBanner": "906:28735", "HomeLNB": "905:22848", "HomeOTT": "905:22961",
+  "A-1": "900:39993", "A-2": "900:40005", "A-3": "900:40038", "A-4": "900:40050", "A-6": "900:40062", "A-7": "900:40063", "A-8": "900:40091", "A-12": "900:40103", "A-13": "900:40104", "A-14": "900:40105", "A-15": "900:40106", "A-16": "900:40118",
+  "B-1": "900:40120", "B-2": "900:40132", "B-3": "900:40156", "B-4": "900:40168", "B-6": "900:40185", "B-7": "900:40212", "B-8": "900:40219",
+  "C-1": "900:40220", "C-2": "900:40253", "C-3": "900:40296", "C-4": "900:40297", "C-5": "900:40310", "C-7": "900:40326", "C-8": "900:40327",
+  "D-1": "900:40328", "D-3": "900:40329", "D-4": "900:40330", "D-5": "900:40331", "D-6": "900:40332",
+  "F-1": "914:27149", "F-2": "900:40358", "F-3": "914:29221", "F-4": "900:40384",
+  "G-1": "900:40385", "G-2": "900:40386",
+  "I-1": "900:40387", "I-2": "900:40388", "I-3": "900:40389", "I-4": "900:40390",
+  "K-2": "900:40405", "K-3": "900:40406", "K-4": "900:40407", "K-5": "900:40408", "K-6": "900:40409"
+};
+// 친화 별칭(LLM이 타입명으로 지목) → 대표 모듈 코드
+const MODULE_ALIAS = {
+  "일반모듈": "A-1", "콘텐츠모듈": "A-1", "가로기본모듈": "A-1", "VOD모듈": "A-2", "실시간모듈": "A-3", "OTT모듈": "A-4",
+  "랭킹모듈": "B-1", "구독모듈": "C-1",
+  "이벤트모듈": "D-1", "프로모션모듈": "D-1", "큰배너모듈": "D-4", "대형배너모듈": "D-4",
+  "카테고리모듈": "F-1", "장르모듈": "F-2", "패널모듈": "F-4",
+  "인물모듈": "G-1", "이어보기모듈": "I-1", "상세모듈": "K-2"
+};
+function moduleIdFor(name) {
+  if (!name) return null;
+  const raw = String(name);
+  if (MODULES[raw]) return MODULES[raw];
+  const key = raw.replace(/\s/g, "");
+  if (MODULE_ALIAS[key] && MODULES[MODULE_ALIAS[key]]) return MODULES[MODULE_ALIAS[key]];
+  const code = raw.match(/[A-K]-\d+|I-\d/);
+  if (code && MODULES[code[0]]) return MODULES[code[0]];
+  return null;
+}
+async function moduleInstance(name) {
+  const id = moduleIdFor(name);
+  if (!id) return null;
+  try {
+    const src = await figma.getNodeByIdAsync(id);
+    if (src && (src.type === "COMPONENT" || src.type === "COMPONENT_SET")) {
+      return (src.type === "COMPONENT_SET" ? src.defaultVariant : src).createInstance();
+    }
+  } catch (e) {}
+  return null;
+}
+
 // ---- 검수/교정용 데이터 ----
 const COLOR_HEX = {
   "core/soft-white": "#F5F5F5", "core/gray-700": "#CBCBCD", "core/gray-600": "#97979B",
@@ -404,6 +446,14 @@ async function build(b, parent) {
     }
     parent.appendChild(node);
     if (parent.layoutMode === "VERTICAL") node.layoutSizingHorizontal = "FILL";
+  } else if (b.type === "module") {
+    // 우리가 만든 편성 거버넌스 모듈/홈 컴포넌트 인스턴스(코드 또는 별칭)
+    node = await moduleInstance(b.module || b.name || b.component);
+    if (node) parent.appendChild(node);
+    else {   // 미등록 모듈 → 자리표시자(무엇이 빠졌는지 보이게)
+      node = figma.createFrame(); node.resize(1648, 300); node.cornerRadius = 12; node.fills = [await colorPaint("core/gray-300")];
+      parent.appendChild(node);
+    }
   }
   return node;
 }
@@ -467,6 +517,7 @@ async function render(SCREEN) {
   const xs = figma.currentPage.children.map(n => n.x + n.width);
   f.x = (xs.length ? Math.max.apply(null, xs) : 0) + 200; f.y = 0;
 
+  if (S.layout === "home") { await buildHome(S, f); return f; }
   if (S.layout === "settingScreen") { await buildSettingScreen(S, f); return f; }
   if (S.layout === "rightPanel") { await buildRightPanel(S, f); return f; }
   if (S.layout === "bottomSheet") { await buildBottomSheet(S, f); return f; }
@@ -515,6 +566,45 @@ async function buildBottomSheet(S, f) {
   sheet.paddingTop = 48; sheet.paddingBottom = 48; sheet.paddingLeft = 72; sheet.paddingRight = 72; sheet.itemSpacing = 28; sheet.fills = [await colorPaint("core/soft-black")];
   f.appendChild(sheet); sheet.layoutSizingHorizontal = "FILL";
   for (const ch of (S.children || [])) await build(ch, sheet);
+}
+
+// 홈: 상단 메인배너(+OTT 숏컷) + 하단 콘텐츠 모듈 세로 스택(x136) + 좌측 LNB 오버레이.
+// children = module 블록 배열({type:"module", module:"MainBanner|카테고리모듈|A-2|...", title?}).
+// 세로로 길어지며(모듈이 붙을수록), LNB는 스크롤 시 콘텐츠 위에 겹치는 좌측 고정 오버레이.
+async function buildHome(S, f) {
+  f.layoutMode = "NONE"; f.clipsContent = true;
+  const kids = S.children || [];
+  const MODULE_X = 136;
+  let y = 0, bannerBottom = 0, hasBanner = false;
+  for (const ch of kids) {
+    if (!ch) continue;
+    if (ch.type === "module") {
+      const inst = await moduleInstance(ch.module || ch.name);
+      if (!inst) continue;
+      f.appendChild(inst);
+      if (inst.width >= 1900) {                 // 전면/메인 배너 = 풀폭 상단
+        inst.x = 0; inst.y = y; y += inst.height; bannerBottom = y; hasBanner = true;
+      } else {                                   // 콘텐츠 모듈 = x136, 제목(있으면) 위에
+        y += 40;
+        if (ch.title) {
+          const t = figma.createText();
+          await figma.loadFontAsync({ family: "Pretendard", style: "Bold" });
+          t.fontName = { family: "Pretendard", style: "Bold" }; t.fontSize = 32;
+          t.characters = String(ch.title); t.fills = [await colorPaint("core/soft-white")];
+          f.appendChild(t); t.x = MODULE_X; t.y = y; y = t.y + t.height + 16;
+        }
+        inst.x = MODULE_X; inst.y = y; y += inst.height;
+      }
+    } else {                                     // 기타 블록은 x136 세로 흐름 폴백
+      const n = await build(ch, f);
+      if (n) { try { n.x = MODULE_X; n.y = y + 40; y = n.y + n.height; } catch (e) {} }
+    }
+  }
+  f.resize(S.size ? S.size[0] : 1920, Math.max(1080, y + 60));
+  // 상단 OTT 숏컷(배너 위) — S.ott:false면 생략
+  if (S.ott !== false) { const ott = await moduleInstance("HomeOTT"); if (ott) { f.appendChild(ott); ott.x = 136; ott.y = 58; } }
+  // 좌측 LNB(스크롤 시 콘텐츠 위 오버레이) — 배너 하단부터. S.lnb:false면 생략
+  if (S.lnb !== false) { const lnb = await moduleInstance("HomeLNB"); if (lnb) { f.appendChild(lnb); lnb.x = 0; lnb.y = hasBanner ? bannerBottom : 0; } }
 }
 
 // ---- 게이트 검수: G1 글자 / G2·§8.3 대비 / G4 항목수 / G5 용어 / G8 되돌리기 / TOKEN ----
