@@ -148,6 +148,25 @@ const MODULES = {
   "I-1": "900:40387", "I-2": "900:40388", "I-3": "900:40389", "I-4": "900:40390",
   "K-2": "900:40405", "K-3": "900:40406", "K-4": "900:40407", "K-5": "900:40408", "K-6": "900:40409"
 };
+// 전용관 편성 템플릿(UDS-TV_전용관_편성템플릿.json 미러 — 오프라인 조립용).
+// screen.template="키즈나라" 지정 시 해당 modules로 자동 확장. 규칙: 전면배너 1st + x136 스택 + LNB/OTT 오버레이.
+const SCHEDULING_TEMPLATES = {
+  "홈":       { size: [1920, 2600], modules: [{ module: "MainBanner" }, { module: "I-1", title: "이어보기" }, { module: "B-1", title: "실시간 인기 랭킹" }, { module: "A-1", title: "지금 뜨는 콘텐츠" }, { module: "A-4", title: "OTT 인기" }, { module: "F-1", title: "카테고리" }] },
+  "영화관":   { size: [1920, 2800], modules: [{ module: "MainBanner" }, { module: "I-1", title: "이어보기" }, { module: "B-2", title: "영화 랭킹" }, { module: "K-3", title: "이번 주 추천" }, { module: "F-2", title: "장르별 바로가기" }, { module: "G-1", title: "인물별 보기" }] },
+  "키즈나라": { size: [1920, 2400], modules: [{ module: "MainBanner" }, { module: "I-3", title: "이어보기" }, { module: "B-2", title: "인기 애니 랭킹" }, { module: "A-2", title: "새로 나온 애니" }, { module: "F-1", title: "카테고리" }] },
+  "월정액":   { size: [1920, 2500], modules: [{ module: "MainBanner" }, { module: "C-8", title: "월정액 추천" }, { module: "C-1", title: "월정액 VOD" }, { module: "C-5", title: "OTT 개인화" }, { module: "D-1", title: "이벤트" }] },
+  "OTT관":    { size: [1920, 2400], modules: [{ module: "MainBanner" }, { module: "A-7", title: "OTT 바로가기" }, { module: "B-4", title: "OTT 랭킹" }, { module: "A-4", title: "OTT 인기 콘텐츠" }, { module: "D-4", title: "이벤트 배너" }] },
+  "다시보기": { size: [1920, 2800], modules: [{ module: "MainBanner" }, { module: "I-1", title: "이어보기" }, { module: "A-12", title: "찜한 콘텐츠" }, { module: "A-8", title: "취향저격 추천" }, { module: "B-2", title: "VOD 랭킹" }, { module: "F-1", title: "카테고리" }] }
+};
+const TEMPLATE_ALIAS = { "영화": "영화관", "영화홈": "영화관", "키즈": "키즈나라", "아이들나라": "키즈나라", "구독": "월정액", "OTT": "OTT관", "VOD": "다시보기", "다시보기관": "다시보기" };
+function resolveTemplate(name) {
+  if (!name) return null;
+  const raw = String(name).replace(/\s/g, "");
+  if (SCHEDULING_TEMPLATES[raw]) return SCHEDULING_TEMPLATES[raw];
+  if (TEMPLATE_ALIAS[raw] && SCHEDULING_TEMPLATES[TEMPLATE_ALIAS[raw]]) return SCHEDULING_TEMPLATES[TEMPLATE_ALIAS[raw]];
+  return null;
+}
+
 // 친화 별칭(LLM이 타입명으로 지목) → 대표 모듈 코드
 const MODULE_ALIAS = {
   "일반모듈": "A-1", "콘텐츠모듈": "A-1", "가로기본모듈": "A-1", "VOD모듈": "A-2", "실시간모듈": "A-3", "OTT모듈": "A-4",
@@ -509,6 +528,13 @@ async function renderPattern(usePattern, fields) {
 
 async function render(SCREEN) {
   const S = SCREEN.screen;
+  // 전용관 템플릿 확장: screen.template 지정 시 modules를 채우고 layout=home 강제
+  const tpl = resolveTemplate(S.template);
+  if (tpl) {
+    S.layout = "home";
+    if (!S.children || !S.children.length) S.children = tpl.modules.map(m => Object.assign({ type: "module" }, m));
+    if ((!S.size || !S.size[1]) && tpl.size) S.size = tpl.size.slice();
+  }
   const f = figma.createFrame(); f.name = (S.name || "screen") + " [자동생성]";
   f.resize(S.size ? S.size[0] : 1920, S.size ? S.size[1] : 1080);
   f.fills = [await colorPaint(S.bg || S.background || "core/soft-black", 1)]; f.clipsContent = true;

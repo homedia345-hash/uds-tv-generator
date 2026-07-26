@@ -10,7 +10,8 @@ const SRC = join(__dir, "..");            // IPTV_UX_표준화_백업 (이 폴�
 const OUT = join(__dir, "knowledge");
 mkdirSync(OUT, { recursive: true });
 
-const core = ["uds-tv-screen-catalog.json", "UDS-TV_ScreenSchema.md", "uds-tv-glossary.json"];
+const core = ["uds-tv-screen-catalog.json", "UDS-TV_ScreenSchema.md", "uds-tv-glossary.json",
+  "UDS-TV_편성거버넌스_규칙.md", "UDS-TV_전용관_편성템플릿.json"];
 const patterns = (() => { try { return readdirSync(SRC).filter(f => /^UDS-TV_Pattern_.*\.md$/.test(f)); } catch { return []; } })();
 
 let n = 0, miss = [];

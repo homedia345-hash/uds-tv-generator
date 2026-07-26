@@ -51,12 +51,17 @@ function loadSystem() {
   if (!root) return RULES + "\n\n" + COMPACT_VOCAB;
   try {
     const read = (p) => readFileSync(join(root, p), "utf8");
+    const readOpt = (p) => { try { return readFileSync(join(root, p), "utf8"); } catch { return ""; } };
     const CATALOG = read("uds-tv-screen-catalog.json");
     const SCHEMA = read("UDS-TV_ScreenSchema.md");
     const GLOSSARY = read("uds-tv-glossary.json");
     const PATTERNS = loadPatterns(root);
+    const GOVERNANCE = readOpt("UDS-TV_편성거버넌스_규칙.md");   // 편성 거버넌스 규칙(모듈 카탈로그·배치·동작·조건)
+    const TEMPLATES = readOpt("UDS-TV_전용관_편성템플릿.json");  // 전용관별 표준 편성 템플릿
     return RULES + "\n\n[컴포넌트 카탈로그]\n" + CATALOG + "\n\n[화면 스키마 문법]\n" + SCHEMA +
-           "\n\n[용어 사전]\n" + GLOSSARY + (PATTERNS ? "\n\n[패턴 라이브러리]\n" + PATTERNS : "");
+           "\n\n[용어 사전]\n" + GLOSSARY + (PATTERNS ? "\n\n[패턴 라이브러리]\n" + PATTERNS : "") +
+           (GOVERNANCE ? "\n\n[편성 거버넌스 규칙 — 모듈 카탈로그·배치·동작·조건]\n" + GOVERNANCE : "") +
+           (TEMPLATES ? "\n\n[전용관 편성 템플릿]\n" + TEMPLATES : "");
   } catch (e) {
     return RULES + "\n\n" + COMPACT_VOCAB;   // 파일 없으면 임베드 어휘 사용(배포 환경)
   }
@@ -85,6 +90,7 @@ const RULES = `너는 U+tv(UDS-TV) 화면 생성기다. 입력(기능정의서/�
 - **[패턴 라이브러리]가 주어지면 우선 활용**: 입력 의도에 맞는 패턴을 골라 그 패턴 MD의 "생성기 레퍼런스" screen JSON 형식·레이아웃을 그대로 따른다(라벨/개수/선택상태만 입력에 맞게 교체). 임의로 더 단순한 형태로 바꾸지 말 것.
 - **패턴 모드 최우선**: 입력이 어떤 패턴 MD의 "패턴 모드(복제+치환)" 섹션과 본질적으로 같은 화면이면, screen을 새로 조립하지 말고 그 섹션 형식대로 \`{ "usePattern":"<이름>", "fields":{ "@슬롯":값, ... } }\` **만** 출력한다(완성 원본을 복제하므로 품질이 가장 높다). 슬롯 값은 입력에서 읽은 실제 문구·상태로 채운다.
 - **설정 화면**(좌측 LNB + 우측 콘텐츠)은 반드시 \`layout:"settingScreen"\` + 블록 \`lnb\`·\`breadcrumb\`·\`card\`를 사용한다(일반 리스트/스택으로 떨어뜨리지 말 것). "왼쪽에 LNB", "좌측 메뉴", "설정 … 화면"이면 settingScreen 패턴.
+- **전용관 편성**: 입력이 특정 전용관("홈","영화관/영화 홈","키즈나라","월정액/구독","OTT관","다시보기/VOD") 화면을 요청하면, [전용관 편성 템플릿]에서 해당 전용관을 찾아 그 \`modules\` 순서·title·size 그대로 \`layout:"home"\`으로 조립한다. 지름길로 \`{ "screen": { "layout":"home", "template":"키즈나라" } }\`만 출력해도 된다(플러그인이 템플릿을 펼침). 조건부 모듈(이어보기 없음/찜 없음/성인)과 [편성 거버넌스 규칙]의 배치·동작(롤링·PIP·포커스)을 준수한다. 키즈나라는 인물(G) 제외.
 - **메인 홈/홈 화면**("메인 홈", "홈", "전면배너 + 콘텐츠 모듈들" 등)은 반드시 \`layout:"home"\` + \`module\` 블록으로만 조립한다. 배너·카테고리·이벤트·큰배너·포스터 줄을 text/Image/component로 새로 그리지 말고, 우리 모듈(MainBanner·카테고리모듈·이벤트모듈·큰배너모듈·일반모듈·랭킹모듈·이어보기모듈 등)을 \`{"type":"module","module":"…","title":"…"}\`로 지목한다. 좌측 LNB·상단 OTT 숏컷은 home 레이아웃이 자동으로 얹으므로 children에 넣지 않는다. 모듈이 많으면 size 세로를 길게(예 [1920,2600]).
 블록 타입:
 - text{style,color,content,align}

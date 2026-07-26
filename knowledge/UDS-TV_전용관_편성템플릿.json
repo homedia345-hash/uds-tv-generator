@@ -1,0 +1,96 @@
+{
+  "$schema": "uds-tv-scheduling-templates/v1",
+  "description": "전용관(홈/영화/키즈/월정액/OTT/VOD)별 표준 편성 템플릿. 화면 생성기(플러그인)가 layout:home + module 블록으로 자동 조립하는 데이터. 근거: UDS-TV_편성거버넌스_규칙.md",
+  "rules": {
+    "frame": [1920, 1080],
+    "moduleStartX": 136,
+    "contentWidth": 1648,
+    "banner": "전용관 1st 순서 고정(J-2 / MainBanner)",
+    "overlay": { "LNB": [0, 0], "OTT": [136, 58] },
+    "focus": "글로우 금지 · 105% 확대 + 흰 보더 4px",
+    "conditional": {
+      "I-1": "이어보기 없으면 비노출",
+      "I-3": "애니 이어보기 없으면 비노출",
+      "A-12": "찜 있을 때만",
+      "adult": "이어보기/추천에 성인 비노출"
+    }
+  },
+  "templates": {
+    "홈": {
+      "label": "메인 홈",
+      "size": [1920, 2600],
+      "ott": true, "lnb": true,
+      "modules": [
+        { "module": "MainBanner" },
+        { "module": "I-1", "title": "이어보기", "conditional": "continue" },
+        { "module": "B-1", "title": "실시간 인기 랭킹" },
+        { "module": "A-1", "title": "지금 뜨는 콘텐츠" },
+        { "module": "A-4", "title": "OTT 인기" },
+        { "module": "F-1", "title": "카테고리" }
+      ]
+    },
+    "영화관": {
+      "label": "영화 / 해외드라마",
+      "size": [1920, 2800],
+      "ott": true, "lnb": true,
+      "modules": [
+        { "module": "MainBanner" },
+        { "module": "I-1", "title": "이어보기", "conditional": "continue" },
+        { "module": "B-2", "title": "영화 랭킹" },
+        { "module": "K-3", "title": "이번 주 추천 (상세)" },
+        { "module": "F-2", "title": "장르별 바로가기" },
+        { "module": "G-1", "title": "인물별 보기" }
+      ]
+    },
+    "키즈나라": {
+      "label": "키즈나라",
+      "size": [1920, 2400],
+      "ott": true, "lnb": true,
+      "note": "인물(G) 제외 · 애니 이어보기(I-3) 사용 · 성인 전면 배제",
+      "modules": [
+        { "module": "MainBanner" },
+        { "module": "I-3", "title": "이어보기", "conditional": "continue-ani" },
+        { "module": "B-2", "title": "인기 애니 랭킹" },
+        { "module": "A-2", "title": "새로 나온 애니" },
+        { "module": "F-1", "title": "카테고리" }
+      ]
+    },
+    "월정액": {
+      "label": "월정액 (구독)",
+      "size": [1920, 2500],
+      "ott": true, "lnb": true,
+      "modules": [
+        { "module": "MainBanner" },
+        { "module": "C-8", "title": "월정액 추천" },
+        { "module": "C-1", "title": "월정액 VOD" },
+        { "module": "C-5", "title": "OTT 개인화" },
+        { "module": "D-1", "title": "이벤트" }
+      ]
+    },
+    "OTT관": {
+      "label": "OTT",
+      "size": [1920, 2400],
+      "ott": true, "lnb": true,
+      "modules": [
+        { "module": "MainBanner" },
+        { "module": "A-7", "title": "OTT 바로가기" },
+        { "module": "B-4", "title": "OTT 랭킹" },
+        { "module": "A-4", "title": "OTT 인기 콘텐츠" },
+        { "module": "D-4", "title": "이벤트 배너" }
+      ]
+    },
+    "다시보기": {
+      "label": "다시보기 (VOD)",
+      "size": [1920, 2800],
+      "ott": true, "lnb": true,
+      "modules": [
+        { "module": "MainBanner" },
+        { "module": "I-1", "title": "이어보기", "conditional": "continue" },
+        { "module": "A-12", "title": "찜한 콘텐츠", "conditional": "wishlist" },
+        { "module": "A-8", "title": "취향저격 추천" },
+        { "module": "B-2", "title": "VOD 랭킹" },
+        { "module": "F-1", "title": "카테고리" }
+      ]
+    }
+  }
+}
