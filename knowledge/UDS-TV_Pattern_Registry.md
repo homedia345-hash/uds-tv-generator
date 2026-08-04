@@ -24,7 +24,7 @@
 | **ScreenSetting** | 화면 설정 | `@title`, `@desc`, `@toggle_title`, `@radio_title`, `@toggle`(bool), `@selected`(선택 라디오 라벨 배열) |
 | **AutoPowerOff** | 자동 전원 끄기 설정 | `@card1_title`, `@card1_desc`, `@card2_title`, `@card2_desc`, `@toggle`(bool), `@selected`(선택 라디오 라벨 배열) |
 | **LivetvOption** | 실시간TV 옵션 패널 | `@section1`, `@ch_num`, `@ch_name`, `@section2`, `@section3` |
-| **HomeGalleryGoogleLogin** | 앱/서비스 **QR 로그인 안내 팝업**(휴대폰 QR·링크·코드로 로그인 유도). 좌: 타이틀+"Google 로그인"+안내문+닫기 Button / 우: QR코드+링크카드+코드카드. nodeId `1344:22369` 복제 | `@heading`("Google 로그인"), `@desc`(안내 문구), `@link`(예 "ab.cd/abcdefgh"), `@code`(예 "ABC-DEF-GHI") |
+| **HomeGalleryGoogleLogin** | 앱/서비스 **QR 로그인 안내 팝업**(휴대폰 QR·링크·코드로 로그인 유도). 좌: 서비스명+"Google 로그인"+안내문+닫기 Button / 우: QR코드+링크카드+코드카드. nodeId `1344:22369` 복제 | `@title`(서비스명 예 "홈 캘린더"), `@sub`(예 "with Google Calendar"), `@heading`("Google 로그인"), `@desc`(안내 문구), `@link`(예 "ab.cd/abcdefgh"), `@code`(예 "ABC-DEF-GHI") |
 
 ## 출력 예시
 

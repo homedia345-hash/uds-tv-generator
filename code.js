@@ -98,6 +98,11 @@ const PATTERNS = {
   LivetvOption: {
     id: "200:10043",
     textSlots: ["@section1", "@ch_num", "@ch_name", "@section2", "@section3"]
+  },
+  HomeGalleryGoogleLogin: {
+    id: "1344:22369",
+    // 앱/서비스 QR 로그인 안내 팝업(홈갤러리 형). @title/@sub=서비스명(예 "홈 캘린더"/"with Google Calendar"), @heading="Google 로그인", @desc=안내문, @link/@code=QR 링크/코드
+    textSlots: ["@title", "@sub", "@heading", "@desc", "@link", "@code"]
   }
 };
 
@@ -712,6 +717,8 @@ figma.ui.onmessage = async (msg) => {
       // 패턴 모드: usePattern이 있으면 완성 원본을 복제+치환(레이아웃 100% 보존)
       const up = schema.usePattern || (schema.screen && schema.screen.usePattern);
       if (up) {
+        // 미등록 패턴이면 하드 실패하지 말고 UI에 조립 폴백 신호(패턴 없이 모듈/컴포넌트로 재생성)
+        if (!PATTERNS[up]) { figma.ui.postMessage({ type: "need-compose", usePattern: up }); return; }
         const fields = schema.fields || (schema.screen && schema.screen.fields) || {};
         const { node, filled } = await renderPattern(up, fields);
         await trackGenerated(node);
