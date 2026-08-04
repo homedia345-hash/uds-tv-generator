@@ -48,7 +48,7 @@
       "variantProps": { "isSelected": ["false","true"] },
       "defaults": { "isSelected": "false" },
       "content": {},
-      "usage": "켜짐/꺼짐 스위치(단독). ON=isSelected=true(Primary). 라벨/아이콘 동반 행이면 ToggleButton."
+      "usage": "켜짐/꺼짐 스위치(=토글·스위치·on/off, 단독). ON=isSelected=true(Primary). 라벨/아이콘 동반 행이면 ToggleButton."
     },
     "ToggleButton": {
       "setId": "307:10570",
@@ -163,7 +163,7 @@
       "variantProps": { "type": ["black","magenta"] },
       "defaults": { "type": "black" },
       "content": {},
-      "usage": "기본 태그 pill. black=기본, magenta=강조. 짧은 상태/표식 라벨."
+      "usage": "기본 태그 pill(=뱃지·배지·스탬프·칩·라벨). black=기본, magenta=강조. 짧은 상태/표식 라벨. 썸네일 위 등급/이용형태 뱃지는 ThumbnailTag."
     },
     "ThumbnailTag": {
       "setId": "495:14882",
