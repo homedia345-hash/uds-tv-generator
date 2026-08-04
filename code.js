@@ -101,8 +101,8 @@ const PATTERNS = {
   },
   HomeGalleryGoogleLogin: {
     id: "1344:22369",
-    // 앱/서비스 QR 로그인 안내 팝업(홈갤러리 형). @title/@sub=서비스명(예 "홈 캘린더"/"with Google Calendar"), @heading="Google 로그인", @desc=안내문, @link/@code=QR 링크/코드
-    textSlots: ["@title", "@sub", "@heading", "@desc", "@link", "@code"]
+    // 앱/서비스 QR 로그인 안내 팝업. @title/@sub=서비스명, @heading="Google 로그인", @desc=안내문, @notice=하단 안내(예 "로그인 완료 시 자동 이동"), @link/@code=QR 링크/코드. 개인정보처리방침·닫기 버튼 고정 포함.
+    textSlots: ["@title", "@sub", "@heading", "@desc", "@notice", "@link", "@code"]
   }
 };
 
