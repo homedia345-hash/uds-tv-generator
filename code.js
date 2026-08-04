@@ -574,8 +574,24 @@ async function render(SCREEN) {
   f.layoutMode = "VERTICAL";
   const pad = SPACE[S.padding] || SCREEN_MARGIN;
   f.paddingTop = pad; f.paddingBottom = pad; f.paddingLeft = pad; f.paddingRight = pad;
+  if (S.layout === "centered") {
+    f.itemSpacing = SPACE["space-600"]; f.primaryAxisAlignItems = "CENTER"; f.counterAxisAlignItems = "CENTER";
+    for (const ch of (S.children || [])) await build(ch, f);
+    return f;
+  }
+  // 하단 고정 footer(확인/취소/닫기 등 버튼줄): screen.footer 있으면 콘텐츠=상단, footer=하단(유사 패턴의 버튼 위치)
+  if (Array.isArray(S.footer) && S.footer.length) {
+    f.primaryAxisAlignItems = "SPACE_BETWEEN";
+    const content = figma.createFrame(); content.name = "content"; content.layoutMode = "VERTICAL"; content.itemSpacing = SPACE["space-600"]; content.fills = [];
+    f.appendChild(content); content.layoutSizingHorizontal = "FILL"; content.layoutSizingVertical = "HUG";
+    for (const ch of (S.children || [])) await build(ch, content);
+    const footer = figma.createFrame(); footer.name = "footer"; footer.layoutMode = "HORIZONTAL"; footer.itemSpacing = SPACE["space-250"]; footer.fills = []; footer.counterAxisAlignItems = "CENTER";
+    footer.primaryAxisAlignItems = ({ left: "MIN", center: "CENTER", right: "MAX", spaceBetween: "SPACE_BETWEEN" })[S.footerAlign] || "MAX";
+    f.appendChild(footer); footer.layoutSizingHorizontal = "FILL"; footer.layoutSizingVertical = "HUG";
+    for (const ch of S.footer) await build(ch, footer);
+    return f;
+  }
   f.itemSpacing = SPACE["space-600"];
-  if (S.layout === "centered") { f.primaryAxisAlignItems = "CENTER"; f.counterAxisAlignItems = "CENTER"; }
   for (const ch of (S.children || [])) await build(ch, f);
   return f;
 }
