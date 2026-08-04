@@ -114,7 +114,7 @@
       "variantProps": { "direction": ["top","bottom","left","right"], "hasIcon": ["false","true"] },
       "defaults": { "direction": "bottom", "hasIcon": "false" },
       "content": { "label": { "kind": "textOverride", "selector": "TEXT", "default": "안내 문구" } },
-      "usage": "말풍선 안내 툴팁(Tooltip/Guide). 특정 버튼/요소를 가리키는 가이드 문구. direction=꼬리 방향. **'툴팁으로','말풍선','~하고 안내' 요청 시 반드시 이걸 사용**(평범한 text로 만들지 말 것)."
+      "usage": "말풍선 안내 툴팁(Tooltip/Guide). '툴팁으로·말풍선·~하고 안내'면 반드시 이걸 사용(text로 흉내 금지). **배치: 특정 버튼/요소를 가리키면 그 대상 바로 옆 같은 group/footer 안에 인접시키고, direction으로 대상을 향하게 한다(대상이 오른쪽이면 direction=right → 툴팁은 버튼 왼쪽). 콘텐츠 흐름 가운데 단독으로 띄우지 말 것.** 예: footer 우측 그룹을 group[Tooltip(right), Button '로그인']으로 묶어 버튼 왼쪽에 붙인다."
     },
     "DetailTooltip": {
       "setId": "256:10290",
