@@ -110,16 +110,36 @@ const PATTERNS = {
 // (이름 충돌[옛 Button vs 재정리 Button] 제거 — setId 우선, 없으면 이름 폴백)
 const TF = (v) => (v ? "true" : "false");
 const COMP = {
-  Button:        { id: "253:10146", variant: p => ({ variant: p.Type || "Basic", state: p.State === "Focus" ? "focused" : (p.State === "Selected" ? "selected" : "default"), isDisabled: TF(p.State === "Disabled") }), text: "label" },
+  // 기본 UI (재정리 setId). variant fn 없으면 props의 VARIANT 키 그대로 통과.
+  Button:        { id: "253:10146", variant: p => ({ variant: p.Type || "Basic", state: p.State === "Focus" ? "focused" : "default", isDisabled: TF(p.State === "Disabled") }), text: "label" },
   Radio:         { id: "253:10171", variant: p => ({ state: p.State === "Focus" ? "focused" : "default", isSelected: TF(p.State === "Selected") }), text: "label" },
-  Toggle:        { id: "253:10187", variant: p => ({ isSelected: TF(p.State === "On") }) },
-  Checkbox:      { id: "253:10224", variant: p => ({ state: p.State === "Focus" ? "focused" : "default", isSelected: TF(p.State === "Selected"), isDisabled: TF(p.State === "Disabled") }), text: "label" },
-  Dropdown:      { id: "254:10127", variant: p => ({ state: p.State === "Focus" ? "focused" : (p.State === "Open" ? "open" : "default") }), text: "value" },
-  PasswordInput: { id: "254:10150", variant: p => ({ state: p.State === "Filled" ? "filled" : (p.State === "Focus" ? "focused" : "empty") }) },
-  IconButton:    { id: "259:10501", variant: p => ({ state: p.State === "Focus" ? "focused" : "default" }), text: "label" },
-  AgeRangeBar:   { id: "278:10171", variant: () => ({}) },
+  Toggle:        { id: "253:10187", text: "label" },
+  ToggleButton:  { id: "307:10570", text: "label" },
+  RadioRow:      { id: "257:10466", text: "label" },
+  Checkbox:      { id: "253:10224" },
+  Dropdown:      { id: "254:10127", text: "value" },
+  Stepper:       { id: "302:10474", text: "label" },
+  PasswordInput: { id: "254:10150" },
+  IconButton:    { id: "259:10501", text: "label" },
+  AgeRangeBar:   { id: "278:10171" },
   Image:         { id: "369:14039", variant: p => ({ ratio: p.ratio || "16:9" }) },
-  // 추가 컴포넌트(재정리) — variantProps 패스스루(카탈로그 prop명 = 셋 variant명)
+  Tooltip:       { id: "256:10394", text: "label" },
+  DetailTooltip: { id: "256:10290" },
+  DetailReaction:{ id: "255:10263" },
+  ThumbnailItem: { id: "255:10172" },
+  Scrollbar:     { id: "276:10124" },
+  // 실시간·마이·구독·설정(재정리)
+  LivetvMode:       { id: "257:10330", text: "label" },
+  LivetvChannel:    { id: "257:10373", text: "label" },
+  LivetvList:       { id: "258:10464", text: "label" },
+  LnbMenuItem:      { id: "1241:22121", text: "label" },
+  SettingNav:       { id: "1216:18731" },
+  SettingDeviceRow: { id: "1131:22318", text: "label" },
+  SubTitle:         { id: "1109:22390" },
+  SubProductBtn:    { id: "1127:22545" },
+  MyMenuBtn:        { id: "1126:22673" },
+  ProductCard:      { id: "551:15394" },
+  // 실제 디자인 리소스(기존)
   TextField:        { id: "491:14870", variant: p => ({ state: p.state || "normal" }) },
   PasswordTextField:{ id: "499:14861", variant: p => ({ state: p.state || "normal" }) },
   Tag:              { id: "495:14870", variant: p => ({ type: p.type || "black" }) },
@@ -128,17 +148,14 @@ const COMP = {
   Keynotice:        { id: "495:14981", variant: p => ({ name: p.name || "channel_shift" }) },
   Scrim:            { id: "496:14870", variant: p => ({ Type: p.Type || "SolidScrim" }) },
   ProgressBar:      { id: "496:14885", variant: p => ({ Progress: p.Progress || "0%" }) },
-  Scroll:           { id: "496:14909", variant: p => ({ Location: p.Location || "0%" }) },
   PaginationDot:    { id: "496:14929", variant: p => ({ "Property 1": p.state || "nor" }) },
   Tab:              { id: "492:15126", variant: p => ({ state: p.state || "normal", size: String(p.size || "120") }) },
   SeasonListTab:    { id: "492:15153", variant: p => ({ state: p.state || "normal" }) },
   ModuleTab:        { id: "492:15171", variant: p => ({ state: p.state || "nor" }) },
   SettingStepper:   { id: "496:14947", variant: p => ({ step: String(p.step || "1") }) },
-  Stepper:          { id: "496:15040", variant: p => ({ type: p.type || "tving", step: String(p.step || "1") }) },
   Loading:          { id: "111:11602", variant: p => ({ sequence: String(p.sequence || "1") }) },
-  SettingLNB:       { id: "31:11873", variant: p => ({ Type: p.Type || "Open", name: p.name || "2depth" }) },
-  ProductCard:      { id: "551:15394", variant: () => ({}) },
-  PopupCommon:   { id: "544:15145", variant: p => ({ btn: p.btn || "2btn" }), popup: true }   // 재정리 PopupCommon. 버튼 1/2/3개 변형(btn). title/body=컴포넌트 프로퍼티
+  SettingLNB:       { id: "1111:22300" },
+  PopupCommon:   { id: "544:15145", variant: p => ({ btn: p.btn || "2btn" }), popup: true }
 };
 
 // 편성 거버넌스 모듈 + 홈 조립 컴포넌트(우리가 만든 로컬 컴포넌트) — 코드/이름으로 인스턴스화

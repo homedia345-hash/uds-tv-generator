@@ -1,8 +1,8 @@
 {
-  "$schema": "uds-tv-screen-catalog/v1",
-  "description": "UDS-TV 자동 화면생성용 컴포넌트 카탈로그. LLM은 이 어휘로만 화면 스키마를 작성하고, 조립기는 이 매핑으로 인스턴스를 생성한다.",
+  "$schema": "uds-tv-screen-catalog/v2",
+  "description": "UDS-TV 자동 화면생성용 컴포넌트 카탈로그(2026-08 재정리 기준). LLM은 이 어휘로만 화면 스키마를 작성하고, 조립기는 setId로 인스턴스를 생성한다. 자연어 조립(패턴 없을 때)은 이 컴포넌트들로 화면을 짠다.",
   "fileKey": "zrtugqYc19aXqpqWUaYErv",
-  "page": "테스트 파일",
+  "page": "컴포넌트 재정리",
   "tokens": {
     "colorCollection": "UDS-TV/Color",
     "spaceCollection": "UDS-TV/Space",
@@ -23,49 +23,77 @@
   },
   "components": {
     "Button": {
-      "setId": "44:6923",
-      "variantProps": { "Type": ["Basic","Small","Round"], "State": ["Default","Focus","Disabled"] },
+      "setId": "253:10146",
+      "variantProps": { "Type": ["Basic","Small","Round","Line","Download"], "State": ["Default","Focus","Disabled"] },
       "defaults": { "Type": "Basic", "State": "Default" },
       "content": { "label": { "kind": "textOverride", "selector": "TEXT", "default": "버튼" } },
-      "usage": "행동 버튼. 팝업/CTA=Basic, 보조=Small, 콘텐츠 위 플로팅=Round. 포커스=면 반전, 비활성=Disabled(opacity 30%)."
+      "usage": "행동 버튼. 팝업/CTA=Basic, 보조=Small, 플로팅=Round, 라인=Line, 다운로드=Download. 포커스=면 반전(흰 버튼+어두운 아이콘 자동), 비활성=Disabled. 아이콘 필요 시 hasIcon-start=true(아이콘은 상태별 자동 색)."
     },
     "Radio": {
-      "setId": "45:6915",
+      "setId": "253:10171",
       "variantProps": { "State": ["Default","Selected","Focus"] },
       "defaults": { "State": "Default" },
-      "content": { "label": { "kind": "property", "key": "label#54:0", "default": "켜짐" } },
-      "usage": "택일 선택. 선택=Primary 도트, 포커스=면 반전(별개 축). 가로 나열 gap=space-400."
+      "content": { "label": { "kind": "textOverride", "selector": "TEXT", "default": "켜짐" } },
+      "usage": "택일 선택 '도트만'. 라벨+행이 필요하면 RadioRow를 써라. 선택=Primary 도트, 포커스=면 반전."
+    },
+    "RadioRow": {
+      "setId": "257:10466",
+      "variantProps": { "state": ["default","focused"], "isSelected": ["false","true"] },
+      "defaults": { "state": "default", "isSelected": "false" },
+      "content": { "label": { "kind": "textOverride", "selector": "TEXT", "default": "꺼짐" } },
+      "usage": "○ 라벨 라디오 '행'(행 전체가 선택 영역). 설정 옵션 세로 리스트에 사용. 선택=isSelected, 포커스=state=focused. 도트만 있는 Radio와 구분."
     },
     "Toggle": {
-      "setId": "47:6909",
-      "variantProps": { "State": ["On","Off"] },
-      "defaults": { "State": "Off" },
+      "setId": "253:10187",
+      "variantProps": { "isSelected": ["false","true"] },
+      "defaults": { "isSelected": "false" },
       "content": {},
-      "usage": "켜짐/꺼짐 스위치. ON=Primary. (자녀보호 마스터 토글은 Kids 그린 별도)."
+      "usage": "켜짐/꺼짐 스위치(단독). ON=isSelected=true(Primary). 라벨/아이콘 동반 행이면 ToggleButton."
+    },
+    "ToggleButton": {
+      "setId": "307:10570",
+      "variantProps": { "type": ["icon","text"], "state": ["normal","focus"], "isOn": ["true","false"] },
+      "defaults": { "type": "text", "state": "normal", "isOn": "false" },
+      "content": { "label": { "kind": "textOverride", "selector": "TEXT", "default": "자녀 보호 모드" } },
+      "usage": "아이콘/텍스트 + 토글 스위치 설정 '행'(예 자녀 보호 모드). type=icon(아이콘 동반)/text. 켜짐=isOn=true, 포커스=면 반전."
     },
     "PasswordInput": {
-      "setId": "47:6915",
-      "variantProps": { "State": ["Empty","Filled","Focus"] },
-      "defaults": { "State": "Empty" },
+      "setId": "254:10150",
+      "variantProps": { "state": ["empty","filled","focused"] },
+      "defaults": { "state": "empty" },
       "content": {},
-      "usage": "PIN 한 칸. 4칸 그룹으로 gap=space-250 배치. Filled=별표, Focus=흰면 반전+116 확대."
+      "usage": "PIN 한 칸. 4칸 그룹으로 gap=space-250 배치. filled=별표, focused=흰면 반전 확대."
     },
     "IconButton": {
-      "setId": "48:6915",
-      "variantProps": { "State": ["Normal","Focus"] },
-      "defaults": { "State": "Normal" },
-      "content": { "label": { "kind": "property", "key": "label#54:4", "default": "검색" } },
+      "setId": "259:10501",
+      "variantProps": { "state": ["default","focused"] },
+      "defaults": { "state": "default" },
+      "content": { "label": { "kind": "textOverride", "selector": "TEXT", "default": "검색" } },
       "usage": "아이콘+라벨 버튼(라벨 상시=시니어 권장). 포커스=면 반전+아이콘 확대."
     },
     "Dropdown": {
-      "setId": "51:6913",
-      "variantProps": { "State": ["Normal","Focus","Open"] },
-      "defaults": { "State": "Normal" },
+      "setId": "254:10127",
+      "variantProps": { "state": ["default","focused","open"] },
+      "defaults": { "state": "default" },
       "content": { "value": { "kind": "textOverride", "selector": "TEXT", "default": "30분" } },
-      "usage": "값+chevron 선택. 포커스=굵은 흰 테두리, Open=옵션 리스트 펼침. 수치(시/분) 선택."
+      "usage": "값+chevron 선택. 포커스=굵은 흰 테두리, open=옵션 펼침. 수치(시/분) 선택."
+    },
+    "Stepper": {
+      "setId": "302:10474",
+      "variantProps": { "state": ["default","focused"] },
+      "defaults": { "state": "default" },
+      "content": { "label": { "kind": "textOverride", "selector": "TEXT", "default": "Title" } },
+      "usage": "◄ 값/항목 ► 좌우 화살표 전환 행. 포커스=두꺼운 흰 보더. 시간/옵션 값 스텝 전환."
+    },
+    "Checkbox": {
+      "setId": "253:10224",
+      "variantProps": { "state": ["default","focused"], "isSelected": ["false","true"], "isDisabled": ["false","true"] },
+      "defaults": { "state": "default", "isSelected": "false" },
+      "content": {},
+      "usage": "약관/항목 동의 체크박스(박스만, 32px). 선택=isSelected, 포커스=흰 보더. 라벨은 별도 text 블록으로 옆에(group[Checkbox, text])."
     },
     "AgeRangeBar": {
-      "setId": "52:6907",
+      "setId": "278:10171",
       "variantProps": {},
       "defaults": {},
       "content": {},
@@ -79,63 +107,84 @@
         "title": { "kind": "property", "key": "title#544:0", "default": "자녀 보호 설정 안내" },
         "body": { "kind": "property", "key": "body#544:1", "default": "어린이·교육 채널만 보이도록 설정합니다." }
       },
-      "usage": "중앙 모달(재정리 PopupCommon). 타이틀+본문+버튼. **버튼 개수 1/2/3 선택(btn=1btn|2btn|3btn)**. 짧은 단일/다중 결정."
+      "usage": "중앙 모달. 타이틀+본문+버튼. 버튼 개수 btn=1btn|2btn|3btn."
     },
-    "Checkbox": {
-      "setId": "232:10043",
-      "variantProps": { "State": ["Default","Selected","Focus","Disabled"] },
-      "defaults": { "State": "Default" },
+    "Tooltip": {
+      "setId": "256:10394",
+      "variantProps": { "direction": ["top","bottom","left","right"], "hasIcon": ["false","true"] },
+      "defaults": { "direction": "bottom", "hasIcon": "false" },
+      "content": { "label": { "kind": "textOverride", "selector": "TEXT", "default": "안내 문구" } },
+      "usage": "말풍선 안내 툴팁(Tooltip/Guide). 특정 버튼/요소를 가리키는 가이드 문구. direction=꼬리 방향. **'툴팁으로','말풍선','~하고 안내' 요청 시 반드시 이걸 사용**(평범한 text로 만들지 말 것)."
+    },
+    "DetailTooltip": {
+      "setId": "256:10290",
+      "variantProps": { "icon": ["Purchase","Transfer","Event","Subscribe"] },
+      "defaults": { "icon": "Purchase" },
       "content": {},
-      "usage": "약관/항목 동의 체크박스(박스만, 32px). 선택=Primary 면+흰 체크, 포커스=흰 보더. ⚠️ 라벨 슬롯이 없으므로 라벨은 별도 text 블록으로 옆에 배치(group[Checkbox, text]). label prop 사용 금지."
+      "usage": "상세화면 혜택/쿠폰 툴팁 뱃지(COUPON·최대 할인 등). icon=혜택 종류."
+    },
+    "DetailReaction": {
+      "setId": "255:10263",
+      "variantProps": { "icon": ["Heart","Like","Dislike"], "state": ["default","focused","selected","numberFocus"] },
+      "defaults": { "icon": "Heart", "state": "default" },
+      "content": {},
+      "usage": "상세화면 반응 버튼(하트/좋아요/싫어요). 선택=selected."
     },
     "Image": {
       "setId": "369:14039",
       "variantProps": { "ratio": ["16:9","1:1","4:3"] },
       "defaults": { "ratio": "16:9" },
       "content": {},
-      "usage": "이미지·일러스트 자리표시자(placeholder). 실제 사진/일러스트가 들어갈 영역. 안내 일러스트·썸네일·미리보기 등 그래픽 자리에 사용. 비율 variant(16:9/1:1/4:3)."
+      "usage": "이미지·일러스트·달력 등 그래픽 자리표시자(placeholder). 실제 사진/일러스트/커스텀 영역. '달력 임의로','일러스트','미리보기'는 이걸로."
+    },
+    "ThumbnailItem": {
+      "setId": "255:10172",
+      "variantProps": { "size": ["Small","Large"], "state": ["default","focused"], "isLocked": ["false","true"] },
+      "defaults": { "size": "Large", "state": "default", "isLocked": "false" },
+      "content": {},
+      "usage": "콘텐츠 포스터 썸네일(제목·뱃지 포함 카드). 그리드/리스트 나열. isLocked=잠금(성인/구매)."
     },
     "TextField": {
       "setId": "491:14870",
       "variantProps": { "state": ["normal","focus","focus_input","normal_input","normal_result"] },
       "defaults": { "state": "normal" },
       "content": {},
-      "usage": "실제 검색/입력 바(Search bar). 기본/포커스/입력중/결과 상태. 검색어·텍스트 입력."
+      "usage": "실제 검색/입력 바. 기본/포커스/입력중/결과 상태."
     },
     "PasswordTextField": {
       "setId": "499:14861",
       "variantProps": { "state": ["normal","inactive","complete","focus_entering","focus_complete"] },
       "defaults": { "state": "normal" },
       "content": {},
-      "usage": "실제 설정 PIN 입력 칸. 기본/비활성/입력완료/포커스(입력중·완료) 상태."
+      "usage": "실제 설정 PIN 입력 칸. 기본/비활성/입력완료/포커스."
     },
     "Tag": {
       "setId": "495:14870",
       "variantProps": { "type": ["black","magenta"] },
       "defaults": { "type": "black" },
       "content": {},
-      "usage": "기본 태그 pill. black=기본, magenta=강조(브랜드 핑크, 아이콘 동반 가능). 짧은 상태/표식 라벨."
+      "usage": "기본 태그 pill. black=기본, magenta=강조. 짧은 상태/표식 라벨."
     },
     "ThumbnailTag": {
       "setId": "495:14882",
       "variantProps": { "name": ["all","7","12","15","19","adult","free","play","rental","days_3","purchase","mobiletv","viewing rate","preference","notice","next","premium_club","premium_club_v","UHD","intestine"] },
       "defaults": { "name": "all" },
       "content": {},
-      "usage": "썸네일 위 오버레이 뱃지(등급·이용형태·정보). 다크 60% 반투명 면+흰 글자. 등급색은 문구 병행."
+      "usage": "썸네일 위 오버레이 뱃지(등급·이용형태·정보)."
     },
     "LiveChannelTag": {
       "setId": "495:14967",
       "variantProps": { "state": ["normal","select","focus"] },
       "defaults": { "state": "normal" },
       "content": {},
-      "usage": "실시간 채널 편집 태그(normal/select/focus)."
+      "usage": "실시간 채널 편집 태그."
     },
     "Keynotice": {
       "setId": "495:14981",
       "variantProps": { "name": ["channel_shift","channel_up","scene_shift","option","green"] },
       "defaults": { "name": "channel_shift" },
       "content": {},
-      "usage": "화면 하단 키 안내(채널/장면 이동·옵션·컬러키). 실제 디자인 리소스."
+      "usage": "화면 하단 키 안내(채널/장면 이동·옵션·컬러키)."
     },
     "Scrim": {
       "setId": "496:14870",
@@ -151,26 +200,26 @@
       "content": {},
       "usage": "재생·진행률 표시 바."
     },
-    "Scroll": {
-      "setId": "496:14909",
-      "variantProps": { "Location": ["0%","50%","100%"] },
-      "defaults": { "Location": "0%" },
+    "Scrollbar": {
+      "setId": "276:10124",
+      "variantProps": { "position": ["0","20","40","60","80","100"] },
+      "defaults": { "position": "0" },
       "content": {},
-      "usage": "스크롤 위치 인디케이터(세로)."
+      "usage": "세로 스크롤바(썸 위치 position%). 스크롤 가능한 긴 콘텐츠 우측 끝에. raw 사각형 대신 반드시 이걸로."
     },
     "PaginationDot": {
       "setId": "496:14929",
       "variantProps": { "state": ["nor","sel"] },
       "defaults": { "state": "nor" },
       "content": {},
-      "usage": "페이지·캐러셀 도트(미선택/선택)."
+      "usage": "페이지·캐러셀 도트."
     },
     "Tab": {
       "setId": "492:15126",
       "variantProps": { "state": ["normal","select","focus"], "size": ["120","168"] },
       "defaults": { "state": "normal", "size": "120" },
       "content": {},
-      "usage": "실제 트렌드/카테고리 탭(TAB/Trend). select=현재, focus=리모컨 위치(면 반전). size=탭 너비."
+      "usage": "실제 트렌드/카테고리 탭. select=현재, focus=면 반전."
     },
     "SeasonListTab": {
       "setId": "492:15153",
@@ -191,40 +240,98 @@
       "variantProps": { "step": ["1","2","3","4"] },
       "defaults": { "step": "1" },
       "content": {},
-      "usage": "설정/소스 연결 단계 진행 스테퍼(실제 디자인). 번호 원형+연결선."
-    },
-    "Stepper": {
-      "setId": "496:15040",
-      "variantProps": { "type": ["tving","disney"], "step": ["1","2","3"] },
-      "defaults": { "type": "tving", "step": "1" },
-      "content": {},
-      "usage": "가입 단계 진행 스테퍼(실제 디자인). 서비스별 색(tving·disney)으로 진행분 구분(§8.5 그래픽 토큰)."
+      "usage": "설정/소스 연결 단계 진행 스테퍼(번호 원형+연결선)."
     },
     "Loading": {
       "setId": "111:11602",
       "variantProps": { "sequence": ["1","2","3","4","5","6","7","8"] },
       "defaults": { "sequence": "1" },
       "content": {},
-      "usage": "로딩 스피너(시퀀스 1~8 애니메이션 프레임). 처리/변경 진행 중 표시. ChangeProgress 패턴 중앙에 사용."
+      "usage": "로딩 스피너. 처리/변경 진행 중. ChangeProgress 패턴 중앙."
     },
     "SettingLNB": {
-      "setId": "31:11873",
-      "variantProps": { "Type": ["Close","Open"], "name": ["1depth","arrow_area","2depth","3depth"] },
-      "defaults": { "Type": "Open", "name": "2depth" },
-      "content": {},
-      "usage": "설정 좌측 네비게이션 모듈(LNB). 메뉴 항목 리스트(현재 항목 강조). settingScreen 좌측 칼럼(폭 462)."
-    },
-    "ProductCard": {
-      "setId": "551:15394",
+      "setId": "1111:22300",
       "variantProps": {},
       "defaults": {},
       "content": {},
-      "usage": "상품/요금제 가격 선택 카드(상품명 + 금액 + 부가세 포함). 재정리(Pretendard). 가로 카드 리스트(자유이용권/상품옵션 선택 등)에 사용."
+      "usage": "설정 좌측 네비게이션 모듈(LNB, 항목 고정). settingScreen 좌측 칼럼. 개별 항목은 LnbMenuItem."
+    },
+    "LnbMenuItem": {
+      "setId": "1241:22121",
+      "variantProps": { "State": ["Normal","Selected"] },
+      "defaults": { "State": "Normal" },
+      "content": { "label": { "kind": "textOverride", "selector": "TEXT", "default": "메뉴 이름" } },
+      "usage": "LNB 좌측 메뉴 항목 한 줄(아이콘 슬롯+라벨). 현재 항목=Selected. 커스텀 LNB 조립 시 사용."
+    },
+    "SettingNav": {
+      "setId": "1216:18731",
+      "variantProps": { "type": ["Breadcrumb","Back"] },
+      "defaults": { "type": "Breadcrumb" },
+      "content": {},
+      "usage": "상단 내비(경로 Breadcrumb / 뒤로 Back). 포커스 없음. breadcrumb 블록 대신 컴포넌트로 쓸 때."
+    },
+    "SettingDeviceRow": {
+      "setId": "1131:22318",
+      "variantProps": { "State": ["Default","Selected"] },
+      "defaults": { "State": "Default" },
+      "content": { "label": { "kind": "textOverride", "selector": "TEXT", "default": "AirPods Pro" } },
+      "usage": "설정 기기 목록 행(블루투스 이어폰/기기 연결 목록). Selected=현재 연결."
+    },
+    "LivetvMode": {
+      "setId": "257:10330",
+      "variantProps": { "variant": ["Default","Flexible"], "state": ["default","focused"] },
+      "defaults": { "variant": "Default", "state": "default" },
+      "content": { "label": { "kind": "textOverride", "selector": "TEXT", "default": "선호채널" } },
+      "usage": "실시간TV 옵션 패널 모드 버튼(선호채널·자녀보호 등). LivetvOption 구성요소."
+    },
+    "LivetvChannel": {
+      "setId": "257:10373",
+      "variantProps": { "state": ["default","focused"] },
+      "defaults": { "state": "default" },
+      "content": { "label": { "kind": "textOverride", "selector": "TEXT", "default": "선호채널 등록" } },
+      "usage": "실시간TV 채널 설정 버튼(선호채널/숨김채널 등록)."
+    },
+    "LivetvList": {
+      "setId": "258:10464",
+      "variantProps": { "type": ["Default","ButtonText","Toggle","Check"], "state": ["default","focused"] },
+      "defaults": { "type": "Default", "state": "default" },
+      "content": { "label": { "kind": "textOverride", "selector": "TEXT", "default": "채널 한눈에 보기" } },
+      "usage": "실시간TV 옵션 리스트 행. type=Default/ButtonText/Toggle/Check."
+    },
+    "SubTitle": {
+      "setId": "1109:22390",
+      "variantProps": {},
+      "defaults": {},
+      "content": {},
+      "usage": "나의구독 섹션 타이틀+설명. 단일, 포커스 없음."
+    },
+    "SubProductBtn": {
+      "setId": "1127:22545",
+      "variantProps": { "prod": ["VIP 무료","MBC 자유이용권","넷플릭스","추가하기"], "state": ["default","focused"] },
+      "defaults": { "prod": "VIP 무료", "state": "default" },
+      "content": {},
+      "usage": "구독 상품 버튼(나의구독). prod=상품 종류, 포커스=흰 보더."
+    },
+    "MyMenuBtn": {
+      "setId": "1126:22673",
+      "variantProps": { "btn": ["구매한 콘텐츠","쿠폰","TV 포인트","가입정보","N"], "state": ["default","focused"] },
+      "defaults": { "btn": "구매한 콘텐츠", "state": "default" },
+      "content": {},
+      "usage": "마이메뉴 상단 버튼(구매한 콘텐츠·쿠폰·TV 포인트·가입정보·프로모션 N)."
+    },
+    "ProductCard": {
+      "setId": "551:15394",
+      "variantProps": { "state": ["default","focused"] },
+      "defaults": { "state": "default" },
+      "content": {},
+      "usage": "상품/요금제 가격 선택 카드(상품명+금액+부가세). 가로 카드 리스트. 포커스=흰 보더."
     }
   },
   "notes": [
-    "Property 키의 #ID 접미사는 이 파일 기준값. 다른 파일/재생성 시 컴포넌트의 componentPropertyDefinitions에서 다시 읽어 매핑할 것.",
-    "label property가 없는 컴포넌트(Button/Dropdown)는 인스턴스 내부 TEXT를 직접 override(content.kind=textOverride).",
-    "모든 색은 colors 토큰명, 간격은 space 토큰명, 텍스트는 textStyles 이름으로만 참조(raw 값 금지)."
+    "setId는 페이지 '컴포넌트 재정리'(240:10747) 기준. 조립기는 code.js의 COMP[name].id(setId)로 인스턴스를 만든다.",
+    "variantProps 키/값은 재정리 컴포넌트의 실제 variant명 그대로(state=default/focused, isSelected=false/true 등). LLM은 이 이름으로 props를 채운다.",
+    "label/value가 textOverride면 인스턴스 내부 첫 TEXT를 교체. property면 componentProperty 사용.",
+    "모든 색은 colors 토큰, 간격은 space, 텍스트는 textStyles 이름으로만 참조(raw 값 금지).",
+    "**툴팁이 필요하면 Tooltip 컴포넌트를 쓴다(text로 흉내내지 말 것).** 스크롤바는 Scrollbar, LNB 항목은 LnbMenuItem을 쓴다."
   ]
 }
