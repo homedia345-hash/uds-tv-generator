@@ -107,7 +107,7 @@
         "title": { "kind": "property", "key": "title#544:0", "default": "자녀 보호 설정 안내" },
         "body": { "kind": "property", "key": "body#544:1", "default": "어린이·교육 채널만 보이도록 설정합니다." }
       },
-      "usage": "중앙 모달. 타이틀+본문+버튼. 버튼 개수 btn=1btn|2btn|3btn."
+      "usage": "중앙 모달 팝업(=팝업·다이얼로그·확인창). 타이틀+본문+버튼. **버튼 라벨은 반드시 props.buttons 배열로 스펙의 실제 버튼명을 넣는다**(예 [\"취소\",\"로그아웃하기\"]) — 개수에 맞춰 btn(1/2/3) 자동. buttons 안 주면 컴포넌트 기본 라벨이 나오니 생략 금지. title/body는 property override."
     },
     "Tooltip": {
       "setId": "256:10394",

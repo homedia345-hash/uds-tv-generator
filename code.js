@@ -392,8 +392,20 @@ async function instantiate(displayName, props) {
   // 텍스트
   if (cfg.text && props[cfg.text] != null) { await setText(inst, node, props[cfg.text]); }
   if (cfg.popup) {
+    // 버튼 개수 = props.buttons 배열 길이로 자동 설정
+    const labels = Array.isArray(props.buttons) ? props.buttons.filter(x => x != null).map(String) : null;
+    if (labels && labels.length) { try { inst.setProperties({ btn: labels.length + "btn" }); } catch (e) {} }
     const map = CONTENT_PROP.PopupCommon || {};
     for (const ck of Object.keys(map)) { if (props[ck] == null) continue; const key = resolvePropKey(node, map[ck]); if (key) { try { inst.setProperties({ [key]: String(props[ck]) }); } catch (e) {} } }
+    // 버튼 라벨 override: footer 내부 Button 인스턴스들의 텍스트를 props.buttons로 교체
+    if (labels && labels.length) {
+      const footer = inst.findOne(n => n.name === "footer");
+      const btns = (footer || inst).findAll(n => n.type === "INSTANCE");
+      for (let i = 0; i < btns.length && i < labels.length; i++) {
+        const t = btns[i].findOne(n => n.type === "TEXT");
+        if (t) { await ensureFont(t); t.characters = labels[i]; }
+      }
+    }
   }
   return inst;
 }
